@@ -1,0 +1,521 @@
+<Window x:Class="TIC_TAC_TOE.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:conv="clr-namespace:TIC_TAC_TOE.Converters"
+        xmlns:vm="clr-namespace:TIC_TAC_TOE.ViewModels"
+        mc:Ignorable="d"
+        Title="Caro 30x30"
+        Height="980"
+        Width="1480"
+        MinHeight="840"
+        MinWidth="1220"
+        WindowStartupLocation="CenterScreen"
+        WindowState="{Binding CurrentWindowState, Mode=TwoWay}"
+        Background="#FFF9F4EA">
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <conv:EnumLabelConverter x:Key="EnumLabelConverter" />
+
+        <Style x:Key="TopActionButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="#FFFDF8EF" />
+            <Setter Property="Background" Value="#FF576575" />
+            <Setter Property="BorderBrush" Value="#FF44515E" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="14,9" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="RootBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RootBorder" Property="Background" Value="#FF657587" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="RootBorder" Property="Background" Value="#FF4A5663" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryPlayButtonStyle" TargetType="Button" BasedOn="{StaticResource TopActionButtonStyle}">
+            <Setter Property="Background" Value="#FF6A7682" />
+            <Setter Property="BorderBrush" Value="#FF535E69" />
+            <Setter Property="Padding" Value="24,14" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="MinWidth" Value="250" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Background" Value="#FFCB7C38" />
+                    <Setter Property="BorderBrush" Value="#FFB26628" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BoardCellButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="CellBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CellBorder" Property="Background" Value="#FFF9EFD9" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="CellBorder" Property="Opacity" Value="0.9" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{Binding AppBackgroundBrush}">
+        <Border Background="#66FFF8EF" />
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Auto"
+                      Padding="24">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="18" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Padding="14,10"
+                        Background="#EAFDF8F1"
+                        BorderBrush="#50C59E76"
+                        BorderThickness="1"
+                        CornerRadius="16">
+                    <DockPanel LastChildFill="False">
+                        <TextBlock DockPanel.Dock="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="#FF211B17"
+                                   Text="Caro" />
+                        <WrapPanel DockPanel.Dock="Right">
+                            <Button Width="132"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding ToggleWindowModeCommand}"
+                                    Content="{Binding WindowModeButtonText}"
+                                    Style="{StaticResource TopActionButtonStyle}" />
+                            <Button Width="148"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding ChooseBackgroundCommand}"
+                                    Content="Chọn background"
+                                    Style="{StaticResource TopActionButtonStyle}" />
+                            <Button Width="124"
+                                    Command="{Binding ClearBackgroundCommand}"
+                                    Content="Xóa background"
+                                    Style="{StaticResource TopActionButtonStyle}" />
+                        </WrapPanel>
+                    </DockPanel>
+                </Border>
+
+                <Grid Grid.Row="2">
+                    <Grid Visibility="{Binding IsMenuVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="20" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0"
+                                Padding="34"
+                                Background="#B8FFF9F1"
+                                BorderBrush="#80FFFFFF"
+                                BorderThickness="1"
+                                CornerRadius="30">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="280" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0"
+                                            MaxWidth="740">
+                                    <TextBlock FontSize="36"
+                                               FontWeight="Bold"
+                                               Foreground="#FF261F18"
+                                               Text="{Binding Title}" />
+                                    <TextBlock Margin="0,12,0,0"
+                                               FontSize="17"
+                                               Foreground="#FF5A493A"
+                                               Text="{Binding Subtitle}" />
+                                    <TextBlock Margin="0,10,0,0"
+                                               FontSize="14"
+                                               Foreground="#FF7B6652"
+                                               Text="Người chơi X luôn đi trước. Sau nước đầu tiên, các lượt tiếp theo chỉ được đi vào các vị trí liền kề." />
+
+                                    <WrapPanel Margin="0,26,0,0">
+                                        <Button Margin="0,0,14,0"
+                                                Command="{Binding StartPvPCommand}"
+                                                Content="Chơi với một người bạn"
+                                                Style="{StaticResource PrimaryPlayButtonStyle}"
+                                                Tag="{Binding IsPvPMode}" />
+                                        <Button Command="{Binding StartPvCCommand}"
+                                                Content="Chơi với robot"
+                                                Style="{StaticResource PrimaryPlayButtonStyle}"
+                                                Tag="{Binding IsPvCMode}" />
+                                    </WrapPanel>
+                                </StackPanel>
+
+                                <Border Grid.Column="1"
+                                        Padding="18"
+                                        HorizontalAlignment="Right"
+                                        Background="#D9F8EFD9"
+                                        BorderBrush="#73C49B72"
+                                        BorderThickness="1"
+                                        CornerRadius="20">
+                                    <StackPanel Width="220">
+                                        <TextBlock FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#FF7A624A"
+                                                   Text="Background hiện tại" />
+                                        <TextBlock Margin="0,6,0,0"
+                                                   FontSize="15"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FF241B16"
+                                                   Text="{Binding BackgroundName}" />
+                                        <TextBlock Margin="0,20,0,0"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#FF7A624A"
+                                                   Text="Độ khó mặc định của robot" />
+                                        <ComboBox Margin="0,8,0,0"
+                                                  SelectedItem="{Binding SelectedDifficulty}"
+                                                  ItemsSource="{Binding AvailableDifficulties}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource EnumLabelConverter}}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="2"
+                                Padding="26"
+                                Background="#B8FFF9F1"
+                                BorderBrush="#80FFFFFF"
+                                BorderThickness="1"
+                                CornerRadius="28">
+                                
+                            <Border.Effect>
+                                <DropShadowEffect Color="#FFB8A18C"
+                                                  Direction="270"
+                                                  ShadowDepth="4"
+                                                  BlurRadius="12"/>
+                            </Border.Effect>
+                                <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="300" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        Padding="16"
+                                        Background="#CFEDE4D0"
+                                        BorderBrush="#B98E6847"
+                                        BorderThickness="1.2"
+                                        CornerRadius="22">
+                                    <Grid>
+                                        <ItemsControl Width="900"
+                                                      Height="900"
+                                                      ItemsSource="{Binding Cells}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Rows="30" Columns="30" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type vm:CellViewModel}">
+                                                    <Grid Margin="0.6">
+                                                        <Border Background="{Binding BackgroundBrush}"
+                                                                BorderBrush="{Binding BorderBrush}"
+                                                                BorderThickness="0.9"
+                                                                CornerRadius="2" />
+                                                        <Ellipse Width="4"
+                                                                 Height="4"
+                                                                 Fill="{Binding HintBrush}"
+                                                                 HorizontalAlignment="Center"
+                                                                 VerticalAlignment="Center"
+                                                                 Visibility="{Binding HintVisibility}" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
+                                </Border>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock FontSize="22"
+                                               FontWeight="Bold"
+                                               Foreground="#FF241C15"
+                                               Text="Chọn cách chơi" />
+                                    <TextBlock Margin="0,10,0,0"
+                                               FontSize="14"
+                                               Foreground="#FF5F4D3E"
+                                               Text="Bố cục được giữ giống tinh thần của trang tham chiếu: phần chọn chế độ ở ngoài và bàn cờ là trung tâm." 
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Margin="0,18,0,0"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="#FF7B644E"
+                                               Text="Màu sắc chủ đạo" />
+                                    <TextBlock Margin="0,8,0,0"
+                                               Foreground="#FF3F3328"
+                                               Text="Kem sáng, nâu ấm và xám xanh đậm." />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <Grid Visibility="{Binding IsInGame, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="22" />
+                            <ColumnDefinition Width="320" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <WrapPanel Margin="0,0,0,16">
+                                <Border Margin="0,0,12,0"
+                                        Padding="14,10"
+                                        Background="#D9FDFCF5"
+                                        BorderBrush="#65BF9870"
+                                        BorderThickness="1"
+                                        CornerRadius="16">
+                                    <StackPanel>
+                                        <TextBlock FontSize="12"
+                                                   Foreground="#FF7A624E"
+                                                   Text="Lượt hiện tại" />
+                                        <TextBlock FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FF241B15"
+                                                   Text="{Binding CurrentPlayerText}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,0,12,0"
+                                        Padding="14,10"
+                                        Background="#D9FDFCF5"
+                                        BorderBrush="#65BF9870"
+                                        BorderThickness="1"
+                                        CornerRadius="16">
+                                    <StackPanel>
+                                        <TextBlock FontSize="12"
+                                                   Foreground="#FF7A624E"
+                                                   Text="Chế độ" />
+                                        <TextBlock FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FF241B15"
+                                                   Text="{Binding GameModeText}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,0,12,0"
+                                        Padding="14,10"
+                                        Background="#D9FDFCF5"
+                                        BorderBrush="#65BF9870"
+                                        BorderThickness="1"
+                                        CornerRadius="16"
+                                        Visibility="{Binding IsPvCMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel>
+                                        <TextBlock FontSize="12"
+                                                   Foreground="#FF7A624E"
+                                                   Text="Độ khó" />
+                                        <TextBlock FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FF241B15"
+                                                   Text="{Binding DifficultyText}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,0,12,0"
+                                        Padding="14,10"
+                                        Background="#D9FDFCF5"
+                                        BorderBrush="#65BF9870"
+                                        BorderThickness="1"
+                                        CornerRadius="16">
+                                    <StackPanel>
+                                        <TextBlock FontSize="12"
+                                                   Foreground="#FF7A624E"
+                                                   Text="Số nước X" />
+                                        <TextBlock FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FFB0303C"
+                                                   Text="{Binding MoveCountX}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,0,12,0"
+                                        Padding="14,10"
+                                        Background="#D9FDFCF5"
+                                        BorderBrush="#65BF9870"
+                                        BorderThickness="1"
+                                        CornerRadius="16">
+                                    <StackPanel>
+                                        <TextBlock FontSize="12"
+                                                   Foreground="#FF7A624E"
+                                                   Text="Số nước O" />
+                                        <TextBlock FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#FF245A98"
+                                                   Text="{Binding MoveCountO}" />
+                                    </StackPanel>
+                                </Border>
+                            </WrapPanel>
+
+                            <TextBlock Margin="4,0,0,14"
+                                       FontSize="14"
+                                       Foreground="#FF6C5644"
+                                       Text="{Binding StatusText}"
+                                       TextWrapping="Wrap" />
+
+                            <WrapPanel Margin="0,0,0,16">
+                                <Button Width="126"
+                                        Margin="0,0,12,0"
+                                        Command="{Binding BackToMenuCommand}"
+                                        Content="Về chọn mode"
+                                        Style="{StaticResource TopActionButtonStyle}" />
+                                <Button Width="118"
+                                        Margin="0,0,12,0"
+                                        Command="{Binding NewGameCommand}"
+                                        Content="New Game"
+                                        Style="{StaticResource TopActionButtonStyle}" />
+                                <Button Width="118"
+                                        Command="{Binding RestartCommand}"
+                                        Content="Restart"
+                                        Style="{StaticResource TopActionButtonStyle}" />
+                            </WrapPanel>
+
+                            <Border Padding="18"
+                                    Background="#D0EEE3CF"
+                                    BorderBrush="#C28D6340"
+                                    BorderThickness="1.2"
+                                    CornerRadius="28">
+                                <ScrollViewer HorizontalScrollBarVisibility="Visible"
+                                              VerticalScrollBarVisibility="Visible"
+                                              CanContentScroll="False">
+                                    <ItemsControl Width="930"
+                                                  Height="930"
+                                                  ItemsSource="{Binding Cells}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="30" Columns="30" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type vm:CellViewModel}">
+                                                <Grid Margin="0.65">
+                                                    <Button Background="{Binding BackgroundBrush}"
+                                                            BorderBrush="{Binding BorderBrush}"
+                                                            BorderThickness="0.95"
+                                                            Command="{Binding PlayCommand}"
+                                                            Content="{Binding DisplayText}"
+                                                            FontSize="13"
+                                                            Foreground="{Binding ForegroundBrush}"
+                                                            IsEnabled="{Binding IsAvailable}"
+                                                            Style="{StaticResource BoardCellButtonStyle}" />
+                                                    <Ellipse Width="5"
+                                                             Height="5"
+                                                             Fill="{Binding HintBrush}"
+                                                             HorizontalAlignment="Center"
+                                                             VerticalAlignment="Center"
+                                                             Visibility="{Binding HintVisibility}"
+                                                             IsHitTestVisible="False" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+
+                        <Border Grid.Column="2"
+                                Padding="18"
+                                Background="#DDFDF9F1"
+                                BorderBrush="#6BBE9870"
+                                BorderThickness="1"
+                                CornerRadius="22">
+                            <StackPanel>
+                                <TextBlock FontSize="22"
+                                           FontWeight="Bold"
+                                           Foreground="#FF221A14"
+                                           Text="Lịch sử trận đấu" />
+                                <TextBlock Margin="0,10,0,0"
+                                           FontSize="13"
+                                           Foreground="#FF5E4938"
+                                           Text="{Binding HistoryStatusText}"
+                                           TextWrapping="Wrap" />
+
+                                <Border Margin="0,16,0,0"
+                                        Padding="10"
+                                        Background="#E6FFFBF5"
+                                        BorderBrush="#58C09A72"
+                                        BorderThickness="1"
+                                        CornerRadius="16">
+                                    <ScrollViewer Height="760"
+                                                  VerticalScrollBarVisibility="Visible"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsControl ItemsSource="{Binding RecentGames}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Margin="0,0,0,10"
+                                                            Padding="12"
+                                                            Background="#FFF6ECDD"
+                                                            BorderBrush="#6CC09A72"
+                                                            BorderThickness="1"
+                                                            CornerRadius="12">
+                                                        <TextBlock Foreground="#FF2D221A"
+                                                                   Text="{Binding DisplayText}"
+                                                                   TextWrapping="Wrap" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>

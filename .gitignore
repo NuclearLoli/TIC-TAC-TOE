@@ -1,0 +1,16 @@
+.vs/
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+**/*.cache
+**/*.pdb
+publish/
+artifacts/
+*.log
+*.db
+*.sqlite
+*.mdf
+*.ldf
+.env
+.env.*
