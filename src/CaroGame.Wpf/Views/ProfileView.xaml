@@ -12,6 +12,7 @@
     <UserControl.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
         <conv:BoolToVisibilityConverter x:Key="InvertedBoolToVis" Invert="True" />
+        <conv:StringEqualsConverter x:Key="StringEqualsConverter" />
     </UserControl.Resources>
 
     <Grid Background="#262421">
@@ -21,7 +22,7 @@
         </Grid.RowDefinitions>
 
         <!-- TOP BAR -->
-        <Border Grid.Row="0" Background="#21201D" BorderBrush="#36332E" BorderThickness="0,0,0,1" Padding="28,14">
+        <Border Grid.Row="0" Background="#21201D" BorderBrush="#36332E" BorderThickness="0,0,0,1" Padding="24,10">
             <Grid>
                 <Button Content="← Quay lại" Command="{Binding BackCommand}"
                         HorizontalAlignment="Left" VerticalAlignment="Center"
@@ -106,10 +107,14 @@
                                        FontSize="13" Foreground="#9E9C99" Margin="0,0,0,6" />
 
                             <!-- Level & XP Progress Bar -->
-                            <StackPanel Margin="0,0,0,8" MaxWidth="340" HorizontalAlignment="Left">
+                            <StackPanel Margin="0,0,0,8" Width="300" HorizontalAlignment="Left">
                                 <Grid Margin="0,0,0,4">
-                                    <TextBlock Text="{Binding Profile.Level, StringFormat='⚡ CẤP ĐỘ {0}'}" FontSize="11.5" FontWeight="Black" Foreground="#81B64C" HorizontalAlignment="Left" />
-                                    <TextBlock FontSize="10.5" FontWeight="SemiBold" Foreground="#9E9C99" HorizontalAlignment="Right">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding Profile.Level, StringFormat='⚡ CẤP ĐỘ {0}'}" FontSize="11.5" FontWeight="Black" Foreground="#81B64C" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" FontSize="10.5" FontWeight="SemiBold" Foreground="#9E9C99" VerticalAlignment="Center">
                                         <Run Text="{Binding Profile.CurrentLevelXp, Mode=OneWay}" />
                                         <Run Text=" / " />
                                         <Run Text="{Binding Profile.NextLevelXp, Mode=OneWay}" />
@@ -301,6 +306,38 @@
                 <StackPanel Visibility="{Binding IsEditTab, Converter={StaticResource BoolToVis}}">
                     <Border Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1" CornerRadius="14" Padding="26,22">
                         <StackPanel>
+                            <!-- LIVE PROFILE PREVIEW CARD (Chess.com Style) -->
+                            <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1" CornerRadius="12" Padding="18,14" Margin="0,0,0,20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Live Preview Avatar with dynamic border frame -->
+                                    <controls:AvatarControl Grid.Column="0"
+                                                            Avatar="{Binding EditAvatar}"
+                                                            AvatarIcon="{Binding PreviewAvatarIcon}"
+                                                            Size="72" FontSize="36"
+                                                            BorderBrush="{Binding PreviewAvatarFrameBorderBrush}"
+                                                            BorderThickness="3"
+                                                            Margin="0,0,18,0" VerticalAlignment="Center" />
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="XEM TRƯỚC HỒ SƠ THỰC TẾ (LIVE PREVIEW)" FontSize="10.5" FontWeight="Bold" Foreground="#81B64C" Margin="0,0,0,4" />
+                                        <WrapPanel VerticalAlignment="Center" Margin="0,0,0,4">
+                                            <TextBlock Text="{Binding PreviewCountryFlag}" FontSize="15" Margin="0,0,6,2" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding EditDisplayName}" FontSize="18" FontWeight="Black" Foreground="#FFFFFF" Margin="0,0,8,2" VerticalAlignment="Center" />
+                                            <Border Background="#1C2E3D" BorderBrush="#38BDF8" BorderThickness="1"
+                                                    CornerRadius="6" Padding="7,2" VerticalAlignment="Center" Margin="0,0,6,2">
+                                                <TextBlock Text="{Binding EditTitle, StringFormat='⚔️ {0}'}" FontWeight="Bold" FontSize="11" Foreground="#38BDF8" />
+                                            </Border>
+                                        </WrapPanel>
+                                        <TextBlock Text="{Binding EditBio}" FontSize="12" Foreground="#9E9C99" FontStyle="Italic" TextWrapping="Wrap" MaxHeight="38" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
                             <!-- Custom Avatar Upload Card -->
                             <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1" CornerRadius="12" Padding="18,14" Margin="0,0,0,18">
                                 <Grid>
@@ -309,16 +346,17 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Live Preview of Currently Selected Avatar -->
+                                    <!-- Small avatar helper preview -->
                                     <controls:AvatarControl Grid.Column="0"
                                                             Avatar="{Binding EditAvatar}"
-                                                            Size="72" FontSize="36"
-                                                            BorderBrush="#81B64C" BorderThickness="2.5"
-                                                            Margin="0,0,20,0" VerticalAlignment="Center" />
+                                                            AvatarIcon="{Binding PreviewAvatarIcon}"
+                                                            Size="54" FontSize="26"
+                                                            BorderBrush="#81B64C" BorderThickness="2"
+                                                            Margin="0,0,16,0" VerticalAlignment="Center" />
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="ẢNH ĐẠI DIỆN TÙY CHỈNH (TỰ DO UPLOAD)" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,4" />
-                                        <TextBlock Text="Tự do tải ảnh đại diện từ máy tính của bạn (JPG, PNG, WEBP). Hệ thống tự động căn chỉnh và nén tối ưu."
+                                        <TextBlock Text="ẢNH ĐẠI DIỆN TÙY CHỈNH (TỰ DO UPLOAD TỪ MÁY)" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,4" />
+                                        <TextBlock Text="Tự do tải ảnh đại diện từ máy tính của bạn (JPG, PNG, WEBP). Hệ thống tự động nén tối ưu."
                                                    FontSize="11.5" Foreground="#9E9C99" Margin="0,0,0,10" TextWrapping="Wrap" />
 
                                         <StackPanel Orientation="Horizontal">
@@ -328,11 +366,11 @@
                                                     Padding="14,7" Margin="0,0,10,0"
                                                     ToolTip="Chọn một tệp ảnh trên máy tính của bạn" />
 
-                                            <Button Content="❌ Xóa ảnh / Dùng icon"
+                                            <Button Content="❌ Dùng icon mặc định"
                                                     Command="{Binding RemoveCustomAvatarCommand}"
                                                     Visibility="{Binding HasCustomAvatar, Converter={StaticResource BoolToVis}}"
                                                     Background="#3F2727" Foreground="#EF4444" BorderBrush="#7F1D1D" BorderThickness="1"
-                                                    Padding="12,7" ToolTip="Quay về sử dụng bộ icon cờ tướng mặc định">
+                                                    Padding="12,7" ToolTip="Quay về sử dụng bộ icon cờ mặc định">
                                                 <Button.Resources>
                                                     <Style TargetType="Border">
                                                         <Setter Property="CornerRadius" Value="8" />
@@ -349,70 +387,70 @@
                             <!-- 10 Avatar Choices in Grid -->
                             <WrapPanel Margin="0,0,0,20">
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             IsChecked="True" Command="{Binding SelectAvatarCommand}" CommandParameter="king">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=king, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="👑" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Vua Cờ" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="knight">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=knight, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="⚔️" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Hiệp Sĩ" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="ninja">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=ninja, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="🥷" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Ninja" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="bot">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=bot, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="🤖" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Cyber Bot" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="fox">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=fox, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="🦊" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Cáo Tinh Anh" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="cat">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=cat, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="🐱" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Mèo Hiệp" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="dragon">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=dragon, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="🐉" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Hỏa Long" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="lightning">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=lightning, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="⚡" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Lôi Thần" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="shield">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=shield, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="🛡️" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Hộ Vệ" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </RadioButton>
                                 <RadioButton Style="{StaticResource SegmentButton}" GroupName="AvatarGroup" Margin="4"
-                                             Command="{Binding SelectAvatarCommand}" CommandParameter="star">
+                                             IsChecked="{Binding EditAvatar, Converter={StaticResource StringEqualsConverter}, ConverterParameter=star, Mode=TwoWay}">
                                     <StackPanel Orientation="Horizontal" Margin="4,2">
                                         <TextBlock Text="🌟" FontSize="18" Margin="0,0,6,0" />
                                         <TextBlock Text="Tân Tinh" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
@@ -424,67 +462,78 @@
                             <TextBlock Text="QUỐC KỲ / KHU VỰC" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,10" />
                             <WrapPanel Margin="0,0,0,20">
                                 <RadioButton Content="🇻🇳 Việt Nam" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
-                                             Command="{Binding SelectCountryCommand}" CommandParameter="VN" IsChecked="True" />
+                                             IsChecked="{Binding EditCountry, Converter={StaticResource StringEqualsConverter}, ConverterParameter=VN, Mode=TwoWay}" />
                                 <RadioButton Content="🇯🇵 Nhật Bản" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
-                                             Command="{Binding SelectCountryCommand}" CommandParameter="JP" />
+                                             IsChecked="{Binding EditCountry, Converter={StaticResource StringEqualsConverter}, ConverterParameter=JP, Mode=TwoWay}" />
                                 <RadioButton Content="🇰🇷 Hàn Quốc" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
-                                             Command="{Binding SelectCountryCommand}" CommandParameter="KR" />
+                                             IsChecked="{Binding EditCountry, Converter={StaticResource StringEqualsConverter}, ConverterParameter=KR, Mode=TwoWay}" />
                                 <RadioButton Content="🇺🇸 Hoa Kỳ" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
-                                             Command="{Binding SelectCountryCommand}" CommandParameter="US" />
+                                             IsChecked="{Binding EditCountry, Converter={StaticResource StringEqualsConverter}, ConverterParameter=US, Mode=TwoWay}" />
                                 <RadioButton Content="🇬🇧 Anh Quốc" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
-                                             Command="{Binding SelectCountryCommand}" CommandParameter="GB" />
+                                             IsChecked="{Binding EditCountry, Converter={StaticResource StringEqualsConverter}, ConverterParameter=GB, Mode=TwoWay}" />
                                 <RadioButton Content="🇫🇷 Pháp" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
-                                             Command="{Binding SelectCountryCommand}" CommandParameter="FR" />
+                                             IsChecked="{Binding EditCountry, Converter={StaticResource StringEqualsConverter}, ConverterParameter=FR, Mode=TwoWay}" />
                                 <RadioButton Content="🇩🇪 Đức" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
-                                             Command="{Binding SelectCountryCommand}" CommandParameter="DE" />
+                                             IsChecked="{Binding EditCountry, Converter={StaticResource StringEqualsConverter}, ConverterParameter=DE, Mode=TwoWay}" />
                                 <RadioButton Content="🌐 Quốc tế" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
-                                             Command="{Binding SelectCountryCommand}" CommandParameter="INT" />
+                                             IsChecked="{Binding EditCountry, Converter={StaticResource StringEqualsConverter}, ConverterParameter=INT, Mode=TwoWay}" />
                             </WrapPanel>
 
                             <!-- Avatar Frame Selector -->
                             <TextBlock Text="KHUNG VIỀN AVATAR (AVATAR FRAME)" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,10" />
                             <WrapPanel Margin="0,0,0,16">
                                 <RadioButton Content="🌿 Mặc định (Classic)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
-                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="classic" />
+                                             IsChecked="{Binding EditAvatarFrame, Converter={StaticResource StringEqualsConverter}, ConverterParameter=classic, Mode=TwoWay}" />
                                 <RadioButton Content="🥉 Đồng (Bronze)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
-                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="bronze" />
+                                             IsChecked="{Binding EditAvatarFrame, Converter={StaticResource StringEqualsConverter}, ConverterParameter=bronze, Mode=TwoWay}" />
                                 <RadioButton Content="🥈 Bạc (Silver)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
-                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="silver" />
+                                             IsChecked="{Binding EditAvatarFrame, Converter={StaticResource StringEqualsConverter}, ConverterParameter=silver, Mode=TwoWay}" />
                                 <RadioButton Content="👑 Hoàng Kim (Gold)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
-                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="gold" />
+                                             IsChecked="{Binding EditAvatarFrame, Converter={StaticResource StringEqualsConverter}, ConverterParameter=gold, Mode=TwoWay}" />
                                 <RadioButton Content="💎 Kim Cương (Diamond)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
-                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="diamond" />
+                                             IsChecked="{Binding EditAvatarFrame, Converter={StaticResource StringEqualsConverter}, ConverterParameter=diamond, Mode=TwoWay}" />
                                 <RadioButton Content="🔥 Thách Đấu (Challenger)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
-                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="challenger" />
+                                             IsChecked="{Binding EditAvatarFrame, Converter={StaticResource StringEqualsConverter}, ConverterParameter=challenger, Mode=TwoWay}" />
                             </WrapPanel>
 
-                            <!-- Player Title Selector -->
-                            <TextBlock Text="DANH HIỆU KỲ THỦ (TITLE)" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,10" />
-                            <WrapPanel Margin="0,0,0,20">
+                            <!-- Player Title Selector (Chess.com Flairs) -->
+                            <TextBlock Text="DANH HIỆU KỲ THỦ (CHESS.COM TITLE &amp; FLAIR)" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,6" />
+                            <TextBlock Text="Chọn danh hiệu vinh danh hoặc gõ danh hiệu tùy thích bên dưới:" FontSize="11" Foreground="#9E9C99" Margin="0,0,0,10" />
+                            <WrapPanel Margin="0,0,0,12">
                                 <RadioButton Content="🌱 Tân Thủ" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
-                                             Command="{Binding SelectTitleCommand}" CommandParameter="Tân Thủ" />
+                                             IsChecked="{Binding EditTitle, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Tân Thủ', Mode=TwoWay}" />
                                 <RadioButton Content="⚔️ Kỳ Thủ" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
-                                             Command="{Binding SelectTitleCommand}" CommandParameter="Kỳ Thủ" />
-                                <RadioButton Content="⚡ Chiến Thần" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
-                                             Command="{Binding SelectTitleCommand}" CommandParameter="Chiến Thần" />
-                                <RadioButton Content="🎯 Bậc Thầy Caro" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
-                                             Command="{Binding SelectTitleCommand}" CommandParameter="Bậc Thầy Caro" />
+                                             IsChecked="{Binding EditTitle, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Kỳ Thủ', Mode=TwoWay}" />
+                                <RadioButton Content="💎 Kiện Tướng" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             IsChecked="{Binding EditTitle, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Kiện Tướng', Mode=TwoWay}" />
                                 <RadioButton Content="👑 Đại Kiện Tướng" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
-                                             Command="{Binding SelectTitleCommand}" CommandParameter="Đại Kiện Tướng" />
+                                             IsChecked="{Binding EditTitle, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Đại Kiện Tướng', Mode=TwoWay}" />
+                                <RadioButton Content="⚡ Chiến Thần" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             IsChecked="{Binding EditTitle, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Chiến Thần', Mode=TwoWay}" />
+                                <RadioButton Content="🎯 Bậc Thầy Caro" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             IsChecked="{Binding EditTitle, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Bậc Thầy Caro', Mode=TwoWay}" />
                                 <RadioButton Content="🏆 Bất Khả Chiến Bại" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
-                                             Command="{Binding SelectTitleCommand}" CommandParameter="Bất Khả Chiến Bại" />
+                                             IsChecked="{Binding EditTitle, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Bất Khả Chiến Bại', Mode=TwoWay}" />
+                                <RadioButton Content="☕ Giao Lưu Học Hỏi" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             IsChecked="{Binding EditTitle, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Giao Lưu Học Hỏi', Mode=TwoWay}" />
                             </WrapPanel>
+
+                            <!-- Custom Title input -->
+                            <TextBlock Text="HOẶC NHẬP DANH HIỆU TỰ ĐẶT (CUSTOM TITLE / FLAIR)" FontSize="11" FontWeight="Bold" Foreground="#81B64C" Margin="0,0,0,6" />
+                            <TextBox Text="{Binding EditTitle, UpdateSourceTrigger=PropertyChanged}"
+                                     MaxLength="30" FontSize="14" Height="42" VerticalContentAlignment="Center"
+                                     Padding="12,0" Margin="0,0,0,16" />
 
                             <!-- DisplayName Input -->
-                            <TextBlock Text="TÊN HIỂN THỊ" FontSize="12" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,0,6" />
+                            <TextBlock Text="TÊN HIỂN THỊ TRONG GAME" FontSize="12" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,0,6" />
                             <TextBox Text="{Binding EditDisplayName, UpdateSourceTrigger=PropertyChanged}"
-                                     FontSize="14" Height="42" VerticalContentAlignment="Center"
+                                     MaxLength="32" FontSize="14" Height="42" VerticalContentAlignment="Center"
                                      Padding="12,0" Margin="0,0,0,16" />
 
                             <!-- Bio Input -->
                             <TextBlock Text="TIỂU SỬ / CHÂM NGÔN CÁ NHÂN" FontSize="12" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,0,6" />
                             <TextBox Text="{Binding EditBio, UpdateSourceTrigger=PropertyChanged}"
-                                     FontSize="13.5" Height="68" TextWrapping="Wrap" AcceptsReturn="True"
+                                     MaxLength="200" FontSize="13.5" Height="68" TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalContentAlignment="Top" Padding="12,8" Margin="0,0,0,22" />
 
                             <!-- Save Button -->

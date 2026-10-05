@@ -21,7 +21,7 @@
         </Grid.RowDefinitions>
 
         <!-- TOP BAR -->
-        <Border Grid.Row="0" Background="#21201D" BorderBrush="#36332E" BorderThickness="0,0,0,1" Padding="28,14">
+        <Border Grid.Row="0" Background="#21201D" BorderBrush="#36332E" BorderThickness="0,0,0,1" Padding="24,10">
             <Grid>
                 <Button Content="← Quay lại" Command="{Binding BackCommand}"
                         HorizontalAlignment="Left" VerticalAlignment="Center"

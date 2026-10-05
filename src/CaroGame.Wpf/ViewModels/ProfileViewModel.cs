@@ -35,9 +35,12 @@ public partial class ProfileViewModel : ViewModelBase
     private string _editDisplayName = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCustomAvatar))]
+    [NotifyPropertyChangedFor(nameof(PreviewAvatarIcon))]
     private string _editAvatar = "king";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewCountryFlag))]
     private string _editCountry = "VN";
 
     [ObservableProperty]
@@ -47,7 +50,44 @@ public partial class ProfileViewModel : ViewModelBase
     private string _editTitle = "Tân Thủ";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewAvatarFrameBorderBrush))]
     private string _editAvatarFrame = "classic";
+
+    public string PreviewAvatarFrameBorderBrush => EditAvatarFrame switch
+    {
+        "bronze" => "#CD7F32",
+        "silver" => "#C0C0C0",
+        "gold" => "#FFD700",
+        "diamond" => "#00E5FF",
+        "challenger" => "#FF4655",
+        _ => "#81B64C"
+    };
+
+    public string PreviewCountryFlag => EditCountry switch
+    {
+        "VN" => "🇻🇳",
+        "JP" => "🇯🇵",
+        "KR" => "🇰🇷",
+        "US" => "🇺🇸",
+        "GB" => "🇬🇧",
+        "FR" => "🇫🇷",
+        "DE" => "🇩🇪",
+        _ => "🌐"
+    };
+
+    public string PreviewAvatarIcon => HasCustomAvatar ? "👤" : (EditAvatar switch
+    {
+        "knight" => "⚔️",
+        "ninja" => "🥷",
+        "bot" => "🤖",
+        "fox" => "🦊",
+        "cat" => "🐱",
+        "dragon" => "🐉",
+        "lightning" => "⚡",
+        "shield" => "🛡️",
+        "star" => "🌟",
+        _ => "👑"
+    });
 
     // Security fields
     [ObservableProperty]
@@ -133,11 +173,6 @@ public partial class ProfileViewModel : ViewModelBase
     }
 
     public bool HasCustomAvatar => !string.IsNullOrEmpty(EditAvatar) && (EditAvatar.StartsWith("data:image", StringComparison.OrdinalIgnoreCase) || EditAvatar.StartsWith("http", StringComparison.OrdinalIgnoreCase) || EditAvatar.Length > 40);
-
-    partial void OnEditAvatarChanged(string value)
-    {
-        OnPropertyChanged(nameof(HasCustomAvatar));
-    }
 
     [RelayCommand]
     public void SelectAvatar(string avatarKey)
