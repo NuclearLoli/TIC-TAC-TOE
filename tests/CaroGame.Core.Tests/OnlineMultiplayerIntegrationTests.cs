@@ -18,7 +18,7 @@ public class OnlineMultiplayerIntegrationTests
     [Fact]
     public async Task TwoClients_CanCreateRoom_Join_AndExchangeMovesAndChat()
     {
-        int port = Random.Shared.Next(5100, 5900);
+        int port = GetAvailablePort();
         string serverUrl = $"http://127.0.0.1:{port}/carohub";
         string dbName = $"test_{Guid.NewGuid():N}.db";
 
@@ -118,7 +118,7 @@ public class OnlineMultiplayerIntegrationTests
     [Fact]
     public async Task LeaderboardEndpoint_ReturnsTopPlayersOrdered()
     {
-        int port = Random.Shared.Next(5100, 5900);
+        int port = GetAvailablePort();
         string serverUrl = $"http://127.0.0.1:{port}";
         string dbName = $"test_api_{Guid.NewGuid():N}.db";
 
@@ -186,7 +186,7 @@ public class OnlineMultiplayerIntegrationTests
     [Fact]
     public async Task FullMatchLifecycle_WithAuthentication_Chat_GameOver_EloUpdate_AndRematch()
     {
-        int port = Random.Shared.Next(5100, 5900);
+        int port = GetAvailablePort();
         string serverUrl = $"http://127.0.0.1:{port}";
         string hubUrl = $"{serverUrl}/carohub";
         string dbName = $"test_full_{Guid.NewGuid():N}.db";
@@ -372,5 +372,14 @@ public class OnlineMultiplayerIntegrationTests
             await app.DisposeAsync();
             try { File.Delete(dbName); } catch { }
         }
+    }
+
+    private static int GetAvailablePort()
+    {
+        using var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
     }
 }

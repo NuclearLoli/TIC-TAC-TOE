@@ -21,6 +21,7 @@
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <!-- DataTemplates mapping ViewModel to View -->
         <DataTemplate DataType="{x:Type vm:MenuViewModel}">
             <views:MenuView />
@@ -84,9 +85,11 @@
                                                     Size="22" FontSize="11"
                                                     BorderThickness="1"
                                                     Margin="0,0,6,0" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding UserFlag}" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding UserFlag}" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"
+                                       Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}" />
                             <TextBlock Text="{Binding UserDisplayName}" FontWeight="SemiBold" FontSize="11.5" Foreground="#E2DFD8" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding UserEloText, StringFormat=' ({0})'}" FontWeight="Bold" FontSize="11" Foreground="#F59E0B"
+                                       Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"
                                        VerticalAlignment="Center" Margin="2,0,0,0" />
                         </StackPanel>
                     </Button>

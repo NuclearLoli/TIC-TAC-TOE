@@ -6,6 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+string localJsonBase = Path.Combine(AppContext.BaseDirectory, "appsettings.Local.json");
+if (File.Exists(localJsonBase))
+{
+    builder.Configuration.AddJsonFile(localJsonBase, optional: true, reloadOnChange: true);
+}
 
 if (!args.Any(a => a.StartsWith("--urls", StringComparison.OrdinalIgnoreCase)) &&
     string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
@@ -53,6 +58,51 @@ using (var scope = app.Services.CreateScope())
             conn.Open();
         }
 
+        // Ensure secondary tables exist in case of legacy database
+        using (var migCmd = conn.CreateCommand())
+        {
+            migCmd.CommandText = @"
+                CREATE TABLE IF NOT EXISTS EmailVerifications (
+                    Id TEXT PRIMARY KEY,
+                    Email TEXT NOT NULL,
+                    Code TEXT NOT NULL,
+                    Purpose TEXT NOT NULL,
+                    CreatedAt TEXT NOT NULL,
+                    ExpiresAt TEXT NOT NULL,
+                    IsUsed INTEGER NOT NULL DEFAULT 0
+                );
+                CREATE INDEX IF NOT EXISTS IX_EmailVerifications_Lookup ON EmailVerifications(Email, Code, Purpose);
+
+                CREATE TABLE IF NOT EXISTS Friendships (
+                    Id TEXT PRIMARY KEY,
+                    RequesterId TEXT NOT NULL,
+                    AddresseeId TEXT NOT NULL,
+                    Status TEXT NOT NULL,
+                    CreatedAt TEXT NOT NULL,
+                    UpdatedAt TEXT NOT NULL DEFAULT ''
+                );
+                CREATE INDEX IF NOT EXISTS IX_Friendships_Pair ON Friendships(RequesterId, AddresseeId);
+            ";
+            migCmd.ExecuteNonQuery();
+        }
+
+        var existingFriendshipCols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        using (var fcmd = conn.CreateCommand())
+        {
+            fcmd.CommandText = "PRAGMA table_info(Friendships);";
+            using var reader = fcmd.ExecuteReader();
+            while (reader.Read())
+            {
+                existingFriendshipCols.Add(reader.GetString(1));
+            }
+        }
+        if (!existingFriendshipCols.Contains("UpdatedAt"))
+        {
+            using var alterCmd = conn.CreateCommand();
+            alterCmd.CommandText = "ALTER TABLE Friendships ADD COLUMN UpdatedAt TEXT DEFAULT '2025-01-01T00:00:00';";
+            alterCmd.ExecuteNonQuery();
+        }
+
         var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         using (var cmd = conn.CreateCommand())
         {
@@ -60,7 +110,6 @@ using (var scope = app.Services.CreateScope())
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                // In SQLite PRAGMA table_info, column name is at index 1 ('name')
                 existingColumns.Add(reader.GetString(1));
             }
         }
@@ -75,12 +124,52 @@ using (var scope = app.Services.CreateScope())
             }
         }
 
+        AddColumnIfNotExists("Email", "TEXT DEFAULT ''");
         AddColumnIfNotExists("Avatar", "TEXT DEFAULT 'king'");
         AddColumnIfNotExists("Country", "TEXT DEFAULT 'VN'");
         AddColumnIfNotExists("Bio", "TEXT DEFAULT 'Đam mê cờ Caro!'");
+        AddColumnIfNotExists("Wins", "INTEGER DEFAULT 0");
+        AddColumnIfNotExists("Losses", "INTEGER DEFAULT 0");
+        AddColumnIfNotExists("Draws", "INTEGER DEFAULT 0");
         AddColumnIfNotExists("PeakElo", "INTEGER DEFAULT 1000");
         AddColumnIfNotExists("WinStreak", "INTEGER DEFAULT 0");
         AddColumnIfNotExists("BestWinStreak", "INTEGER DEFAULT 0");
+        AddColumnIfNotExists("LastLoginAt", "TEXT DEFAULT '2025-01-01T00:00:00'");
+
+        // Fill default email if missing
+        using (var updEmail = conn.CreateCommand())
+        {
+            updEmail.CommandText = "UPDATE Users SET Email = LOWER(Username) || '@carogame.local' WHERE Email IS NULL OR Email = '';";
+            updEmail.ExecuteNonQuery();
+        }
+
+        // Seed default account mailrac0212@gmail.com (Password: Caro@0212) if not already created
+        bool hasUser = db.Users.Any(u => u.Email.ToLower() == "mailrac0212@gmail.com" || u.Username.ToLower() == "mailrac0212");
+        if (!hasUser)
+        {
+            var seedUser = new User
+            {
+                Username = "mailrac0212",
+                Email = "mailrac0212@gmail.com",
+                DisplayName = "Kỳ Thủ Caro",
+                PasswordHash = PasswordHasher.HashPassword("Caro@0212"),
+                EloRating = 1200,
+                PeakElo = 1200,
+                Avatar = "king",
+                Country = "VN",
+                Bio = "Đam mê cờ Caro!",
+                Wins = 5,
+                Losses = 1,
+                Draws = 0,
+                WinStreak = 3,
+                BestWinStreak = 4,
+                CreatedAt = DateTime.UtcNow,
+                LastLoginAt = DateTime.UtcNow
+            };
+            db.Users.Add(seedUser);
+            db.SaveChanges();
+            Console.WriteLine("[Server] Khởi tạo tài khoản mẫu: mailrac0212@gmail.com (Mật khẩu: Caro@0212)");
+        }
     }
     catch (Exception ex)
     {
@@ -290,7 +379,7 @@ app.MapPost("/api/auth/login", async (LoginRequestDto req, ServerDbContext db, T
 
     var user = await db.Users.FirstOrDefaultAsync(u =>
         u.Username.ToLower() == identifier ||
-        u.Email.ToLower() == identifier);
+        (u.Email != null && u.Email.ToLower() == identifier));
 
     if (user == null || !PasswordHasher.VerifyPassword(password, user.PasswordHash))
     {

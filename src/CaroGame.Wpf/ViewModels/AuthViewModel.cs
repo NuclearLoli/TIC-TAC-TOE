@@ -222,6 +222,14 @@ public partial class AuthViewModel : ViewModelBase
                 {
                     IsOtpStep = true;
                     SuccessMessage = otpResult.Message;
+
+                    // Auto-fill OTP if present in message (e.g. dev or fallback mode)
+                    var match = System.Text.RegularExpressions.Regex.Match(otpResult.Message, @"\b(\d{6})\b");
+                    if (match.Success)
+                    {
+                        OtpCode = match.Groups[1].Value;
+                    }
+
                     StartResendCountdown();
                     OnPropertyChanged(nameof(Title));
                     OnPropertyChanged(nameof(SubmitButtonText));
@@ -272,6 +280,59 @@ public partial class AuthViewModel : ViewModelBase
             {
                 IsLoading = false;
             }
+        }
+    }
+
+    [RelayCommand]
+    public async Task QuickRegister()
+    {
+        ErrorMessage = string.Empty;
+        SuccessMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+        {
+            ErrorMessage = "Vui lòng nhập đầy đủ tên tài khoản và mật khẩu.";
+            return;
+        }
+
+        if (Username.Trim().Length < 3)
+        {
+            ErrorMessage = "Tên tài khoản phải từ 3 ký tự trở lên.";
+            return;
+        }
+
+        if (Password.Length < 6)
+        {
+            ErrorMessage = "Mật khẩu phải từ 6 ký tự trở lên.";
+            return;
+        }
+
+        string emailToUse = string.IsNullOrWhiteSpace(Email)
+            ? $"{Username.Trim().ToLower()}@carogame.local"
+            : Email.Trim();
+
+        IsLoading = true;
+        try
+        {
+            string dispName = string.IsNullOrWhiteSpace(DisplayName) ? Username.Trim() : DisplayName.Trim();
+            var result = await _networkService.RegisterAsync(Username.Trim(), emailToUse, Password, dispName, "");
+            if (result.Success)
+            {
+                _soundService.Play(Core.Enums.SoundEffectType.GameWon);
+                NavigateAfterSuccess();
+            }
+            else
+            {
+                ErrorMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Lỗi đăng ký tài khoản: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 

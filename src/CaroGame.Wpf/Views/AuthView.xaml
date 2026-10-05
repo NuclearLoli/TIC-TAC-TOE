@@ -184,7 +184,11 @@
                         <TextBlock Text="{Binding UsernameLabel}" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
                         <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,14" />
+                                 Padding="12,0" Margin="0,0,0,14">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
 
                         <Grid Margin="2,0,0,6">
                             <TextBlock Text="MẬT KHẨU" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" VerticalAlignment="Center" />
@@ -194,7 +198,11 @@
                         </Grid>
                         <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,18" />
+                                 Padding="12,0" Margin="0,0,0,18">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
 
                         <Button Content="ĐĂNG NHẬP" Command="{Binding SubmitCommand}"
                                 Style="{StaticResource PrimaryButton}" FontSize="14.5" Padding="0,11" Margin="0,0,0,12" />
@@ -232,28 +240,50 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <TextBlock Text="ĐỊA CHỈ EMAIL (NHẬN MÃ OTP)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                        <TextBlock Text="ĐỊA CHỈ EMAIL (TÙY CHỌN)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
                         <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14" Height="40" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,12" />
+                                 Padding="12,0" Margin="0,0,0,12">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding QuickRegisterCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
 
                         <TextBlock Text="TÊN TÀI KHOẢN (USERNAME)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
                         <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14" Height="40" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,12" />
+                                 Padding="12,0" Margin="0,0,0,12">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding QuickRegisterCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
 
                         <TextBlock Text="TÊN HIỂN THỊ (TRONG GAME)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
                         <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14" Height="40" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,12" />
+                                 Padding="12,0" Margin="0,0,0,12">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding QuickRegisterCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
 
                         <TextBlock Text="MẬT KHẨU" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
                         <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14" Height="40" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,16" />
+                                 Padding="12,0" Margin="0,0,0,16">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding QuickRegisterCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
 
-                        <Button Content="TIẾP TỤC &amp; GỬI MÃ OTP ✉️" Command="{Binding SubmitCommand}"
-                                Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,11" Margin="0,0,0,12" />
+                        <!-- Primary: 1-click Quick Register -->
+                        <Button Content="⚡ ĐĂNG KÝ NHANH (KHÔNG CẦN OTP)" Command="{Binding QuickRegisterCommand}"
+                                Style="{StaticResource PrimaryButton}" FontSize="13.5" Padding="0,11" Margin="0,0,0,8" />
+
+                        <!-- Secondary: OTP Verification -->
+                        <Button Content="Xác thực qua Email (Gửi mã OTP ✉️)" Command="{Binding SubmitCommand}"
+                                Background="#3C3935" BorderBrush="#4D4A45" BorderThickness="1"
+                                Foreground="#C3C1BE" FontWeight="SemiBold" FontSize="12.5" Padding="0,9" Margin="0,0,0,12" />
 
                         <Grid Margin="0,2,0,12">
                             <Grid.ColumnDefinitions>
@@ -300,11 +330,14 @@
                         <TextBlock Text="NHẬP MÃ XÁC THỰC OTP (6 CHỮ SỐ)" FontSize="11" FontWeight="Bold"
                                    Foreground="#9E9C99" HorizontalAlignment="Center" Margin="0,0,0,8" />
 
-                        <!-- Large OTP Input Box -->
                         <TextBox Text="{Binding OtpCode, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="24" FontWeight="Black" Height="48" HorizontalContentAlignment="Center"
                                  VerticalContentAlignment="Center" MaxLength="6" Margin="0,0,0,18"
-                                 Background="#21201D" BorderBrush="#81B64C" BorderThickness="1.5" Foreground="#81B64C" />
+                                 Background="#21201D" BorderBrush="#81B64C" BorderThickness="1.5" Foreground="#81B64C">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
 
                         <Button Content="XÁC NHẬN &amp; TẠO TÀI KHOẢN" Command="{Binding SubmitCommand}"
                                 Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,12" Margin="0,0,0,16" />

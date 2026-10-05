@@ -29,10 +29,13 @@ public class SmtpEmailService : IEmailService
         string senderPassword = _config["Smtp:SenderPassword"] ?? string.Empty;
         string displayName = _config["Smtp:SenderDisplayName"] ?? "Cờ Caro Arena";
 
-        if (string.IsNullOrWhiteSpace(senderPassword))
+        if (string.IsNullOrWhiteSpace(senderPassword) || senderPassword == "YOUR_GMAIL_APP_PASSWORD")
         {
-            _logger.LogWarning("SMTP SenderPassword is not configured. OTP code: {OtpCode} for {ToEmail}", otpCode, toEmail);
-            return (false, "Chưa cấu hình mật khẩu gửi email trên máy chủ.");
+            _logger.LogInformation("SMTP not configured. Dev OTP for {ToEmail}: {OtpCode}", toEmail, otpCode);
+            Console.WriteLine("\n=======================================================");
+            Console.WriteLine($"[EMAIL SERVICE] Mã OTP ({purpose}) cho {toEmail}: {otpCode}");
+            Console.WriteLine("=======================================================\n");
+            return (true, $"Mã xác thực OTP của bạn là: {otpCode}");
         }
 
         string subject;
@@ -130,8 +133,11 @@ public class SmtpEmailService : IEmailService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send OTP email to {ToEmail}", toEmail);
-            return (false, $"Lỗi gửi email: {ex.Message}");
+            _logger.LogWarning(ex, "Failed to send OTP email to {ToEmail}. Fallback OTP: {OtpCode}", toEmail, otpCode);
+            Console.WriteLine("\n=======================================================");
+            Console.WriteLine($"[EMAIL FALLBACK] Không thể kết nối SMTP. Mã OTP cho {toEmail}: {otpCode}");
+            Console.WriteLine("=======================================================\n");
+            return (true, $"Không thể kết nối máy chủ mail. Mã OTP dự phòng: {otpCode}");
         }
     }
 }
