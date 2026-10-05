@@ -162,6 +162,12 @@ public class ChangePasswordRequestDto
     public string NewPassword { get; set; } = string.Empty;
 }
 
+public class LinkEmailRequestDto
+{
+    public string NewEmail { get; set; } = string.Empty;
+    public string OtpCode { get; set; } = string.Empty;
+}
+
 public class FriendDto
 {
     public Guid FriendshipId { get; set; }

@@ -4,7 +4,7 @@ public interface INavigationService
 {
     void NavigateToMenu();
     void NavigateToGamePlay();
-    void NavigateToSettings();
+    void NavigateToSettings(string initialTab = "Sound");
     void NavigateToHistory();
     void NavigateToReplay(int gameId);
     void NavigateToOnlineLobby();

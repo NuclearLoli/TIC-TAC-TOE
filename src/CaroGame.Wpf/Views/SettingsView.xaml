@@ -3,94 +3,267 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:conv="clr-namespace:CaroGame.Wpf.Converters"
+             xmlns:controls="clr-namespace:CaroGame.Wpf.Controls"
              xmlns:vm="clr-namespace:CaroGame.Wpf.ViewModels"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
-             d:DesignHeight="700" d:DesignWidth="900">
+             d:DesignHeight="780" d:DesignWidth="940">
+
+    <UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <conv:BoolToVisibilityConverter x:Key="InvertedBoolToVis" Invert="True" />
+    </UserControl.Resources>
 
     <Grid Background="#262421">
-        <Border MaxWidth="760" VerticalAlignment="Center" Margin="30"
+        <Border MaxWidth="780" VerticalAlignment="Center" Margin="24,20"
                 Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1.5"
-                CornerRadius="20" Padding="36">
+                CornerRadius="18" Padding="32,26">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="35" Direction="270" ShadowDepth="10" Color="#000000" Opacity="0.5" />
             </Border.Effect>
 
             <StackPanel>
                 <!-- Header -->
-                <Grid Margin="0,0,0,20">
-                    <TextBlock Text="CÀI ĐẶT ÂM THANH" FontSize="22" FontWeight="Black"
+                <Grid Margin="0,0,0,18">
+                    <TextBlock Text="CÀI ĐẶT HỆ THỐNG" FontSize="22" FontWeight="Black"
                                Foreground="#FFFFFF" VerticalAlignment="Center" />
-                    <Button Content="◀ Quay lại" Command="{Binding BackToMenuCommand}"
-                            HorizontalAlignment="Right" Padding="12,6" />
+                    <Button Content="◀ Quay lại Menu" Command="{Binding BackToMenuCommand}"
+                            HorizontalAlignment="Right" Padding="14,7" FontWeight="Bold" FontSize="12.5" />
                 </Grid>
 
-                <!-- Âm lượng tổng (Master Volume) -->
-                <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
-                        CornerRadius="12" Padding="18,14" Margin="0,0,0,20">
+                <!-- TAB SWITCHER: Sound vs Security & Account -->
+                <Border Background="#262421" CornerRadius="10" Padding="4" Margin="0,0,0,20">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="Âm lượng:" FontWeight="Bold" FontSize="13.5"
-                                   Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,16,0" />
-                        <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding MasterVolume}"
-                                VerticalAlignment="Center" SmallChange="0.05" LargeChange="0.1" />
-                        <TextBlock Grid.Column="2" Text="{Binding MasterVolume, StringFormat='{}{0:P0}'}"
-                                   FontSize="14" FontWeight="Black" Foreground="#81B64C"
-                                   HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <Button Grid.Column="0" Content="🔊 CÀI ĐẶT ÂM THANH" Command="{Binding SwitchTabCommand}" CommandParameter="Sound"
+                                Height="36" Margin="2,0" FontWeight="Bold" FontSize="12.5">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="Foreground" Value="#9E9C99" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSoundTab}" Value="True">
+                                            <Setter Property="Background" Value="#45423E" />
+                                            <Setter Property="Foreground" Value="#FFFFFF" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button Grid.Column="1" Content="🛡️ BẢO MẬT &amp; TÀI KHOẢN" Command="{Binding SwitchTabCommand}" CommandParameter="Security"
+                                Height="36" Margin="2,0" FontWeight="Bold" FontSize="12.5">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="Foreground" Value="#9E9C99" />
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSecurityTab}" Value="True">
+                                            <Setter Property="Background" Value="#45423E" />
+                                            <Setter Property="Foreground" Value="#FFFFFF" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </Grid>
                 </Border>
 
-                <Separator Background="#3F3C38" Margin="0,0,0,16" />
+                <!-- ==================== TAB 1: AUDIO SETTINGS ==================== -->
+                <StackPanel Visibility="{Binding IsSoundTab, Converter={StaticResource BoolToVis}}">
+                    <!-- Âm lượng tổng (Master Volume) -->
+                    <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
+                            CornerRadius="12" Padding="18,14" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="60" />
+                            </Grid.ColumnDefinitions>
 
-                <!-- Danh sách Sound items -->
-                <ScrollViewer MaxHeight="350" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding SoundItems}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:SoundItemViewModel}">
-                                <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
-                                        CornerRadius="10" Padding="14,10" Margin="0,0,0,10">
+                            <TextBlock Text="Âm lượng tổng:" FontWeight="Bold" FontSize="13.5"
+                                       Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,16,0" />
+                            <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding MasterVolume}"
+                                    VerticalAlignment="Center" SmallChange="0.05" LargeChange="0.1" />
+                            <TextBlock Grid.Column="2" Text="{Binding MasterVolume, StringFormat='{}{0:P0}'}"
+                                       FontSize="14" FontWeight="Black" Foreground="#81B64C"
+                                       HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+
+                    <Separator Background="#3F3C38" Margin="0,0,0,14" />
+
+                    <!-- Danh sách Sound items -->
+                    <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding SoundItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:SoundItemViewModel}">
+                                    <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
+                                            CornerRadius="10" Padding="14,10" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <CheckBox Grid.Column="0" IsChecked="{Binding IsEnabled}"
+                                                      VerticalAlignment="Center" Margin="0,0,14,0" />
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" />
+                                                <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="#9E9C99" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Content="▶ Nghe thử" Command="{Binding TestSoundCommand}"
+                                                        Padding="10,5" Margin="0,0,6,0" />
+
+                                                <Button Content="📁 Chọn File..." Command="{Binding BrowseFileCommand}"
+                                                        Style="{StaticResource AccentBlueButton}"
+                                                        Padding="10,5" Margin="0,0,6,0" />
+
+                                                <Button Content="Mặc định" Command="{Binding ResetToDefaultCommand}"
+                                                        Padding="8,5" FontSize="11.5" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Nút Reset All -->
+                    <Button Content="⟳ Khôi phục toàn bộ về âm thanh mặc định" Command="{Binding ResetAllToDefaultCommand}"
+                            HorizontalAlignment="Right" Background="Transparent" Foreground="#FF8282"
+                            BorderThickness="0" FontSize="12.5" FontWeight="Bold" Margin="0,12,0,0" Cursor="Hand" />
+                </StackPanel>
+
+                <!-- ==================== TAB 2: SECURITY & ACCOUNT ==================== -->
+                <ScrollViewer Visibility="{Binding IsSecurityTab, Converter={StaticResource BoolToVis}}"
+                              MaxHeight="450" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="0,0,10,0">
+                        <!-- Section 1: Linked Email Management -->
+                        <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1" CornerRadius="12" Padding="20,16" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="📧 LIÊN KẾT EMAIL TÀI KHOẢN" FontSize="13" FontWeight="Black" Foreground="#FFFFFF" Margin="0,0,0,6" />
+                                <TextBlock Text="Email dùng để khôi phục mật khẩu khi quên và nhận thông báo bảo mật từ hệ thống."
+                                           FontSize="11.5" Foreground="#9E9C99" Margin="0,0,0,14" TextWrapping="Wrap" />
+
+                                <!-- Current Linked Email Display -->
+                                <Border Background="#1E1D1A" BorderBrush="#36332E" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-
-                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsEnabled}"
-                                                  VerticalAlignment="Center" Margin="0,0,14,0" />
-
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding DisplayName}" FontSize="13.5" FontWeight="Bold" Foreground="#FFFFFF" />
-                                            <TextBlock Text="{Binding FilePath}" FontSize="11.5" Foreground="#9E9C99" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="EMAIL HIỆN TẠI:" FontSize="10.5" FontWeight="Bold" Foreground="#787570" />
+                                            <TextBlock Text="{Binding CurrentEmail}" FontSize="13.5" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,2,0,0" />
                                         </StackPanel>
-
-                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <Button Content="▶ Nghe thử" Command="{Binding TestSoundCommand}"
-                                                    Padding="10,6" Margin="0,0,6,0" />
-
-                                            <Button Content="📁 Chọn File..." Command="{Binding BrowseFileCommand}"
-                                                    Style="{StaticResource AccentBlueButton}"
-                                                    Padding="10,6" Margin="0,0,6,0" />
-
-                                            <Button Content="Mặc định" Command="{Binding ResetToDefaultCommand}"
-                                                    Padding="8,6" FontSize="12" />
-                                        </StackPanel>
+                                        <Border Grid.Column="1" Background="#1E3326" BorderBrush="#2D5A3E" BorderThickness="1"
+                                                CornerRadius="6" Padding="8,4" VerticalAlignment="Center"
+                                                Visibility="{Binding IsEmailVerified, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="✓ Đã xác thực" FontSize="11" FontWeight="Bold" Foreground="#4ADE80" />
+                                        </Border>
                                     </Grid>
                                 </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
 
-                <!-- Nút Reset All -->
-                <Button Content="⟳ Khôi phục toàn bộ về âm thanh mặc định" Command="{Binding ResetAllToDefaultCommand}"
-                        HorizontalAlignment="Right" Background="Transparent" Foreground="#FF8282"
-                        BorderThickness="0" FontSize="12.5" FontWeight="Bold" Margin="0,14,0,0" Cursor="Hand" />
+                                <!-- Link New Email Input & Send OTP -->
+                                <TextBlock Text="LIÊN KẾT EMAIL MỚI / THAY ĐỔI EMAIL" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding NewEmail, UpdateSourceTrigger=PropertyChanged}"
+                                             FontSize="13.5" Height="40" VerticalContentAlignment="Center" Padding="10,0" />
+                                    <Button Grid.Column="2" Content="GỬI MÃ OTP ✉️" Command="{Binding SendLinkEmailOtpCommand}"
+                                            IsEnabled="{Binding IsEmailBusy, Converter={StaticResource InvertedBoolToVis}}"
+                                            Style="{StaticResource AccentBlueButton}" Padding="14,0" Height="40" FontSize="12.5" />
+                                </Grid>
+
+                                <!-- Step 2: Confirm OTP (Shown after OTP sent) -->
+                                <StackPanel Visibility="{Binding IsEmailOtpSent, Converter={StaticResource BoolToVis}}" Margin="0,0,0,8">
+                                    <TextBlock Text="MÃ OTP XÁC NHẬN (6 SỐ TỪ EMAIL MỚI)" FontSize="11" FontWeight="Bold" Foreground="#81B64C" Margin="2,0,0,6" />
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="10" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" Text="{Binding EmailOtpCode, UpdateSourceTrigger=PropertyChanged}"
+                                                 MaxLength="6" FontSize="16" FontWeight="Black" Height="40"
+                                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                                        <Button Grid.Column="2" Content="XÁC NHẬN LIÊN KẾT EMAIL ✅" Command="{Binding ConfirmLinkEmailCommand}"
+                                                IsEnabled="{Binding IsEmailBusy, Converter={StaticResource InvertedBoolToVis}}"
+                                                Style="{StaticResource PrimaryButton}" Padding="14,0" Height="40" FontSize="12.5" />
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Email Alerts -->
+                                <Border Background="#3D1A1A" BorderBrush="#EF4444" BorderThickness="1.5" CornerRadius="8" Padding="10,8" Margin="0,0,0,8"
+                                        Visibility="{Binding HasEmailStatus, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{Binding EmailStatusMessage}" Foreground="#FFA3A3" FontSize="12" FontWeight="Bold" TextWrapping="Wrap" />
+                                </Border>
+                                <Border Background="#1A3322" BorderBrush="#22C55E" BorderThickness="1.5" CornerRadius="8" Padding="10,8"
+                                        Visibility="{Binding HasEmailSuccess, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{Binding EmailSuccessMessage}" Foreground="#4ADE80" FontSize="12" FontWeight="Bold" TextWrapping="Wrap" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Section 2: Change Password -->
+                        <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1" CornerRadius="12" Padding="20,16">
+                            <StackPanel>
+                                <TextBlock Text="🔒 ĐỔI MẬT KHẨU TÀI KHOẢN" FontSize="13" FontWeight="Black" Foreground="#FFFFFF" Margin="0,0,0,6" />
+                                <TextBlock Text="Nhập mật khẩu hiện tại và tạo mật khẩu mới an toàn tối thiểu 6 ký tự."
+                                           FontSize="11.5" Foreground="#9E9C99" Margin="0,0,0,14" TextWrapping="Wrap" />
+
+                                <TextBlock Text="MẬT KHẨU HIỆN TẠI" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <controls:PasswordInputControl Password="{Binding OldPassword, Mode=TwoWay}"
+                                                               Placeholder="Nhập mật khẩu hiện tại..."
+                                                               Height="40"
+                                                               Margin="0,0,0,12" />
+
+                                <TextBlock Text="MẬT KHẨU MỚI (TỐI THIỂU 6 KÝ TỰ)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <controls:PasswordInputControl Password="{Binding NewPassword, Mode=TwoWay}"
+                                                               Placeholder="Tối thiểu 6 ký tự..."
+                                                               Height="40"
+                                                               Margin="0,0,0,12" />
+
+                                <TextBlock Text="XÁC NHẬN MẬT KHẨU MỚI" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <controls:PasswordInputControl Password="{Binding ConfirmPassword, Mode=TwoWay}"
+                                                               Placeholder="Nhập lại mật khẩu mới..."
+                                                               EnterCommand="{Binding ChangePasswordCommand}"
+                                                               Height="40"
+                                                               Margin="0,0,0,16" />
+
+                                <!-- Password Alerts -->
+                                <Border Background="#3D1A1A" BorderBrush="#EF4444" BorderThickness="1.5" CornerRadius="8" Padding="10,8" Margin="0,0,0,12"
+                                        Visibility="{Binding HasPasswordStatus, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{Binding PasswordStatusMessage}" Foreground="#FFA3A3" FontSize="12" FontWeight="Bold" TextWrapping="Wrap" />
+                                </Border>
+                                <Border Background="#1A3322" BorderBrush="#22C55E" BorderThickness="1.5" CornerRadius="8" Padding="10,8" Margin="0,0,0,12"
+                                        Visibility="{Binding HasPasswordSuccess, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{Binding PasswordSuccessMessage}" Foreground="#4ADE80" FontSize="12" FontWeight="Bold" TextWrapping="Wrap" />
+                                </Border>
+
+                                <Button Content="🔒 CẬP NHẬT MẬT KHẨU" Command="{Binding ChangePasswordCommand}"
+                                        IsEnabled="{Binding IsPasswordBusy, Converter={StaticResource InvertedBoolToVis}}"
+                                        Style="{StaticResource PrimaryButton}" FontSize="13.5" Padding="0,11" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
             </StackPanel>
         </Border>
     </Grid>

@@ -435,6 +435,38 @@ public class SignalRNetworkService : INetworkService
         }
     }
 
+    public async Task<AuthResponseDto> LinkEmailAsync(string newEmail, string otpCode)
+    {
+        if (string.IsNullOrEmpty(AuthToken)) return new AuthResponseDto { Success = false, Message = "Chưa đăng nhập." };
+
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{ApiBaseUrl}/api/profile/link-email")
+            {
+                Content = JsonContent.Create(new LinkEmailRequestDto
+                {
+                    NewEmail = newEmail,
+                    OtpCode = otpCode
+                })
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthToken);
+
+            var response = await _httpClient.SendAsync(request);
+            var result = await SafeReadAuthResponseAsync(response, "Không thể liên kết email.");
+            if (result.Success && result.User != null)
+            {
+                CurrentUser = result.User;
+                SaveLocalSession(new AuthResponseDto { Success = true, Token = AuthToken, User = CurrentUser });
+                Dispatch(() => UserProfileChanged?.Invoke(CurrentUser));
+            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            return new AuthResponseDto { Success = false, Message = $"Lỗi kết nối máy chủ: {ex.Message}" };
+        }
+    }
+
     private static async Task<AuthResponseDto> SafeReadAuthResponseAsync(HttpResponseMessage response, string defaultErrorMessage)
     {
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)

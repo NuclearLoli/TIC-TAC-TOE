@@ -40,6 +40,7 @@ public interface INetworkService
     Task<UserProfileDto?> GetProfileAsync(Guid? userId = null);
     Task<AuthResponseDto> UpdateProfileAsync(UpdateProfileRequestDto req);
     Task<AuthResponseDto> ChangePasswordAsync(string oldPassword, string newPassword);
+    Task<AuthResponseDto> LinkEmailAsync(string newEmail, string otpCode);
     Task<List<FriendDto>> GetFriendsAsync();
     Task<AuthResponseDto> SendFriendRequestAsync(string targetUsername);
     Task<AuthResponseDto> RespondFriendRequestAsync(Guid friendshipId, bool accept);

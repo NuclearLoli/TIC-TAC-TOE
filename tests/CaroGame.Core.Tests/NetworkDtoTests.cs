@@ -52,4 +52,21 @@ public class NetworkDtoTests
         Assert.Equal(CellState.O, deserialized.Player);
         Assert.Equal(7, deserialized.TurnNumber);
     }
+
+    [Fact]
+    public void LinkEmailRequestDto_SerializationAndDeserialization_ShouldMatch()
+    {
+        var dto = new LinkEmailRequestDto
+        {
+            NewEmail = "player@example.com",
+            OtpCode = "123456"
+        };
+
+        string json = JsonSerializer.Serialize(dto);
+        var deserialized = JsonSerializer.Deserialize<LinkEmailRequestDto>(json);
+
+        Assert.NotNull(deserialized);
+        Assert.Equal("player@example.com", deserialized.NewEmail);
+        Assert.Equal("123456", deserialized.OtpCode);
+    }
 }

@@ -149,7 +149,6 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Button Grid.Column="0" Content="📊 THỐNG KÊ CHIẾN TÍCH" Command="{Binding SwitchTabCommand}" CommandParameter="Overview"
@@ -178,23 +177,6 @@
                                     <Setter Property="BorderThickness" Value="0" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsEditTab}" Value="True">
-                                            <Setter Property="Background" Value="#45423E" />
-                                            <Setter Property="Foreground" Value="#FFFFFF" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-
-                        <Button Grid.Column="2" Content="🔒 BẢO MẬT &amp; MẬT KHẨU" Command="{Binding SwitchTabCommand}" CommandParameter="Security"
-                                Height="36" Margin="2,0" FontWeight="Bold" FontSize="12.5">
-                            <Button.Style>
-                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="Foreground" Value="#9E9C99" />
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSecurityTab}" Value="True">
                                             <Setter Property="Background" Value="#45423E" />
                                             <Setter Property="Foreground" Value="#FFFFFF" />
                                         </DataTrigger>
@@ -538,32 +520,24 @@
 
                             <!-- Save Button -->
                             <Button Content="💾 LƯU THAY ĐỔI HỒ SƠ" Command="{Binding SaveProfileCommand}"
-                                    Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,12" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
+                                    Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,12" Margin="0,0,0,16" />
 
-                <!-- ==================== TAB 3: CHANGE PASSWORD ==================== -->
-                <StackPanel Visibility="{Binding IsSecurityTab, Converter={StaticResource BoolToVis}}">
-                    <Border Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1" CornerRadius="14" Padding="26,22">
-                        <StackPanel>
-                            <TextBlock Text="MẬT KHẨU HIỆN TẠI" FontSize="12" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,0,6" />
-                            <TextBox Text="{Binding OldPassword, UpdateSourceTrigger=PropertyChanged}"
-                                     FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                     Padding="12,0" Margin="0,0,0,16" />
-
-                            <TextBlock Text="MẬT KHẨU MỚI (TỐI THIỂU 6 KÝ TỰ)" FontSize="12" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,0,6" />
-                            <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}"
-                                     FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                     Padding="12,0" Margin="0,0,0,16" />
-
-                            <TextBlock Text="XÁC NHẬN MẬT KHẨU MỚI" FontSize="12" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,0,6" />
-                            <TextBox Text="{Binding ConfirmPassword, UpdateSourceTrigger=PropertyChanged}"
-                                     FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                     Padding="12,0" Margin="0,0,0,22" />
-
-                            <Button Content="🔒 CẬP NHẬT MẬT KHẨU" Command="{Binding ChangePasswordCommand}"
-                                    Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,12" />
+                            <!-- Quick Link to Settings (Security & Password) -->
+                            <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1" CornerRadius="10" Padding="16,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="🛡️ Cài Đặt Mật Khẩu &amp; Liên Kết Email" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" />
+                                        <TextBlock Text="Đổi mật khẩu tài khoản và liên kết email xác thực đã được chuyển sang trang Cài Đặt."
+                                                   FontSize="11.5" Foreground="#9E9C99" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Đi Đến Cài Đặt ⚙️" Command="{Binding OpenSecuritySettingsCommand}"
+                                            Style="{StaticResource AccentBlueButton}" Padding="14,8" VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
                         </StackPanel>
                     </Border>
                 </StackPanel>

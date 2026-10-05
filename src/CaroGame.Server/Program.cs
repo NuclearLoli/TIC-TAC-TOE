@@ -277,7 +277,7 @@ app.MapPost("/api/auth/send-otp", async (SendOtpRequestDto req, ServerDbContext 
         return Results.BadRequest(new AuthResponseDto { Success = false, Message = "Địa chỉ email không hợp lệ." });
     }
 
-    if (string.Equals(purpose, "Register", StringComparison.OrdinalIgnoreCase))
+    if (string.Equals(purpose, "Register", StringComparison.OrdinalIgnoreCase) || string.Equals(purpose, "LinkEmail", StringComparison.OrdinalIgnoreCase))
     {
         bool exists = await db.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
         if (exists)
@@ -608,6 +608,57 @@ app.MapPost("/api/profile/change-password", async Task<IResult> (ChangePasswordR
     await db.SaveChangesAsync();
 
     return Results.Ok(new AuthResponseDto { Success = true, Message = "Đổi mật khẩu thành công!" });
+});
+
+// Link / Update Email
+app.MapPost("/api/profile/link-email", async Task<IResult> (LinkEmailRequestDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
+{
+    var userId = GetAuthUserId(http, tokenService);
+    if (!userId.HasValue) return JsonUnauthorized();
+
+    var user = await db.Users.FindAsync(userId.Value);
+    if (user == null) return JsonNotFound();
+
+    string newEmail = req.NewEmail?.Trim() ?? string.Empty;
+    string otp = req.OtpCode?.Trim() ?? string.Empty;
+
+    if (string.IsNullOrWhiteSpace(newEmail) || !newEmail.Contains('@') || !newEmail.Contains('.'))
+    {
+        return Results.BadRequest(new AuthResponseDto { Success = false, Message = "Địa chỉ email không hợp lệ." });
+    }
+
+    if (string.IsNullOrWhiteSpace(otp) || otp.Length != 6)
+    {
+        return Results.BadRequest(new AuthResponseDto { Success = false, Message = "Vui lòng nhập mã OTP 6 chữ số." });
+    }
+
+    bool emailTaken = await db.Users.AnyAsync(u => u.Id != user.Id && u.Email.ToLower() == newEmail.ToLower());
+    if (emailTaken)
+    {
+        return Results.BadRequest(new AuthResponseDto { Success = false, Message = "Email này đã được tài khoản khác sử dụng." });
+    }
+
+    var verification = await db.EmailVerifications
+        .Where(v => v.Email.ToLower() == newEmail.ToLower() && v.Purpose == "LinkEmail" && !v.IsUsed)
+        .OrderByDescending(v => v.CreatedAt)
+        .FirstOrDefaultAsync();
+
+    if (verification == null || verification.Code != otp || verification.ExpiresAt < DateTime.UtcNow)
+    {
+        return Results.BadRequest(new AuthResponseDto { Success = false, Message = "Mã OTP không đúng hoặc đã hết hạn." });
+    }
+
+    verification.IsUsed = true;
+    user.Email = newEmail;
+    user.IsEmailVerified = true;
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new AuthResponseDto
+    {
+        Success = true,
+        Message = "Liên kết Email thành công!",
+        User = MapProfile(user)
+    });
 });
 
 // Friends Endpoints

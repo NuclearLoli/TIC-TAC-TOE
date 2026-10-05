@@ -54,10 +54,11 @@ public class NavigationService : INavigationService
         _mainViewModel?.SetView(vm);
     }
 
-    public void NavigateToSettings()
+    public void NavigateToSettings(string initialTab = "Sound")
     {
         if (!EnsureAuthenticated()) return;
         var vm = _serviceProvider.GetRequiredService<SettingsViewModel>();
+        vm.CurrentTab = initialTab;
         _mainViewModel?.SetView(vm);
     }
 

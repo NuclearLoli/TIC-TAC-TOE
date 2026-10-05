@@ -316,6 +316,12 @@ public partial class ProfileViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void OpenSecuritySettings()
+    {
+        _navigationService.NavigateToSettings("Security");
+    }
+
+    [RelayCommand]
     public void Back()
     {
         _navigationService.NavigateToMenu();
