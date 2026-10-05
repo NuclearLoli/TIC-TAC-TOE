@@ -102,11 +102,78 @@ public class SignalRNetworkService : INetworkService
         }
     }
 
+    private async Task EnsureServerRunningAsync()
+    {
+        try
+        {
+            var uri = new Uri(ServerUrl);
+            if (!uri.IsLoopback) return;
+
+            using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromMilliseconds(400));
+            var resp = await _httpClient.GetAsync($"{ApiBaseUrl}/health", cts.Token);
+            if (resp.IsSuccessStatusCode) return;
+        }
+        catch
+        {
+            TryStartLocalServer();
+            for (int i = 0; i < 6; i++)
+            {
+                await Task.Delay(400);
+                try
+                {
+                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromMilliseconds(400));
+                    var check = await _httpClient.GetAsync($"{ApiBaseUrl}/health", cts.Token);
+                    if (check.IsSuccessStatusCode) return;
+                }
+                catch { }
+            }
+        }
+    }
+
+    private static void TryStartLocalServer()
+    {
+        try
+        {
+            string baseDir = AppContext.BaseDirectory;
+            string[] potentialPaths = new[]
+            {
+                Path.Combine(baseDir, "CaroGame.Server.exe"),
+                Path.Combine(baseDir, "..", "CaroServer", "CaroGame.Server.exe"),
+                Path.Combine(baseDir, "CaroServer", "CaroGame.Server.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "publish", "CaroServer", "CaroGame.Server.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "src", "CaroGame.Server", "bin", "Debug", "net9.0", "CaroGame.Server.exe"),
+                Path.Combine(baseDir, "..", "..", "..", "..", "publish", "CaroServer", "CaroGame.Server.exe")
+            };
+
+            foreach (var p in potentialPaths)
+            {
+                var fullPath = Path.GetFullPath(p);
+                if (File.Exists(fullPath))
+                {
+                    var psi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = fullPath,
+                        WorkingDirectory = Path.GetDirectoryName(fullPath) ?? baseDir,
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    System.Diagnostics.Process.Start(psi);
+                    break;
+                }
+            }
+        }
+        catch
+        {
+            // Ignore if unable to start process automatically
+        }
+    }
+
     public Task<AuthResponseDto> RegisterAsync(string username, string password, string displayName)
         => RegisterAsync(username, $"{username.Trim()}@carogame.local", password, displayName, "");
 
     public async Task<AuthResponseDto> RegisterAsync(string username, string email, string password, string displayName, string otpCode = "")
     {
+        await EnsureServerRunningAsync();
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/auth/register", new RegisterRequestDto
@@ -138,6 +205,7 @@ public class SignalRNetworkService : INetworkService
 
     public async Task<AuthResponseDto> SendOtpAsync(string email, string purpose = "Register")
     {
+        await EnsureServerRunningAsync();
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/auth/send-otp", new SendOtpRequestDto
@@ -157,6 +225,7 @@ public class SignalRNetworkService : INetworkService
 
     public async Task<AuthResponseDto> VerifyOtpAsync(string email, string code, string purpose = "Register")
     {
+        await EnsureServerRunningAsync();
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/auth/verify-otp", new VerifyOtpRequestDto
@@ -177,6 +246,7 @@ public class SignalRNetworkService : INetworkService
 
     public async Task<AuthResponseDto> ResetPasswordAsync(string email, string otpCode, string newPassword)
     {
+        await EnsureServerRunningAsync();
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/auth/reset-password", new ResetPasswordRequestDto
@@ -197,6 +267,7 @@ public class SignalRNetworkService : INetworkService
 
     public async Task<AuthResponseDto> LoginAsync(string usernameOrEmail, string password)
     {
+        await EnsureServerRunningAsync();
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/auth/login", new LoginRequestDto
@@ -447,6 +518,7 @@ public class SignalRNetworkService : INetworkService
 
     public async Task<List<UserProfileDto>> GetLeaderboardAsync()
     {
+        await EnsureServerRunningAsync();
         try
         {
             var list = await _httpClient.GetFromJsonAsync<List<UserProfileDto>>($"{ApiBaseUrl}/api/leaderboard");
@@ -460,6 +532,7 @@ public class SignalRNetworkService : INetworkService
 
     public async Task ConnectAsync()
     {
+        await EnsureServerRunningAsync();
         if (IsConnected && _hubConnection != null)
         {
             return;

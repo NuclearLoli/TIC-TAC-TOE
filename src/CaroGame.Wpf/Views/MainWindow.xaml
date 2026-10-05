@@ -88,9 +88,9 @@
                             <TextBlock Text="{Binding UserFlag}" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"
                                        Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}" />
                             <TextBlock Text="{Binding UserDisplayName}" FontWeight="SemiBold" FontSize="11.5" Foreground="#E2DFD8" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding UserEloText, StringFormat=' ({0})'}" FontWeight="Bold" FontSize="11" Foreground="#F59E0B"
+                            <TextBlock Text="{Binding UserEloText}" FontWeight="Bold" FontSize="11" Foreground="#F59E0B"
                                        Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"
-                                       VerticalAlignment="Center" Margin="2,0,0,0" />
+                                       VerticalAlignment="Center" Margin="6,0,0,0" />
                         </StackPanel>
                     </Button>
 

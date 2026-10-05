@@ -20,6 +20,7 @@ public class ServerDbContext : DbContext
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(u => u.Id);
+            entity.Property(u => u.Id).UseCollation("NOCASE");
             entity.HasIndex(u => u.Username).IsUnique();
             entity.HasIndex(u => u.Email);
             entity.Property(u => u.Username).HasMaxLength(50).IsRequired();
@@ -39,6 +40,7 @@ public class ServerDbContext : DbContext
         modelBuilder.Entity<EmailVerification>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).UseCollation("NOCASE");
             entity.HasIndex(e => new { e.Email, e.Code, e.Purpose });
             entity.Property(e => e.Email).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Code).HasMaxLength(10).IsRequired();
@@ -47,6 +49,7 @@ public class ServerDbContext : DbContext
         modelBuilder.Entity<Friendship>(entity =>
         {
             entity.HasKey(f => f.Id);
+            entity.Property(f => f.Id).UseCollation("NOCASE");
             entity.HasIndex(f => new { f.RequesterId, f.AddresseeId });
             entity.Property(f => f.Status).HasMaxLength(20).IsRequired();
         });

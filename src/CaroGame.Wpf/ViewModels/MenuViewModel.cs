@@ -38,7 +38,9 @@ public partial class MenuViewModel : ViewModelBase
     // Chess.com style User Identity
     public UserProfileDto? CurrentUser => _networkService.CurrentUser;
     public bool IsLoggedIn => CurrentUser != null;
-    public string UserDisplayName => CurrentUser?.DisplayName ?? "Khách";
+    public string UserDisplayName => !string.IsNullOrWhiteSpace(CurrentUser?.DisplayName)
+        ? CurrentUser.DisplayName
+        : (!string.IsNullOrWhiteSpace(CurrentUser?.Username) ? CurrentUser.Username : "Khách");
     public string UserEloText => CurrentUser != null ? $"⭐ {CurrentUser.EloRating} Elo" : "1000 Elo";
     public string UserStatsText => CurrentUser != null
         ? $"{CurrentUser.Wins}W - {CurrentUser.Losses}L - {CurrentUser.Draws}D  •  Tỉ lệ: {CurrentUser.WinRate}%"

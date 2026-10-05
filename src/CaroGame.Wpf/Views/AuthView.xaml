@@ -204,6 +204,9 @@
                             </TextBox.InputBindings>
                         </TextBox>
 
+                        <TextBlock Text="💡 Tài khoản mẫu: mailrac0212@gmail.com  •  Mật khẩu: Caro@0212"
+                                   FontSize="11" Foreground="#8A8782" HorizontalAlignment="Center" Margin="0,0,0,10" />
+
                         <Button Content="ĐĂNG NHẬP" Command="{Binding SubmitCommand}"
                                 Style="{StaticResource PrimaryButton}" FontSize="14.5" Padding="0,11" Margin="0,0,0,12" />
 

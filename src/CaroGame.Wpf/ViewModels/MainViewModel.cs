@@ -15,7 +15,9 @@ public partial class MainViewModel : ViewModelBase
 
     public UserProfileDto? CurrentUser => _networkService.CurrentUser;
     public bool IsLoggedIn => CurrentUser != null;
-    public string UserDisplayName => CurrentUser?.DisplayName ?? "Khách";
+    public string UserDisplayName => !string.IsNullOrWhiteSpace(CurrentUser?.DisplayName)
+        ? CurrentUser.DisplayName
+        : (!string.IsNullOrWhiteSpace(CurrentUser?.Username) ? CurrentUser.Username : "Khách");
     public string UserEloText => CurrentUser != null ? $"⭐ {CurrentUser.EloRating} Elo" : "";
     public string UserAvatarIcon => CurrentUser?.AvatarIcon ?? "👤";
     public string UserFlag => CurrentUser?.CountryFlag ?? "";

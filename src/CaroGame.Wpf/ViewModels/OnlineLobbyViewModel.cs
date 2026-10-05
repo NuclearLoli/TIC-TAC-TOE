@@ -61,7 +61,9 @@ public partial class OnlineLobbyViewModel : ViewModelBase
 
     public UserProfileDto? CurrentUser => _networkService.CurrentUser;
     public bool IsLoggedIn => CurrentUser != null;
-    public string UserDisplayName => CurrentUser?.DisplayName ?? "Khách Chưa Đăng Nhập";
+    public string UserDisplayName => !string.IsNullOrWhiteSpace(CurrentUser?.DisplayName)
+        ? CurrentUser.DisplayName
+        : (!string.IsNullOrWhiteSpace(CurrentUser?.Username) ? CurrentUser.Username : "Khách Chưa Đăng Nhập");
     public string UserAvatarIcon => CurrentUser?.AvatarIcon ?? "👤";
     public string UserFlag => CurrentUser?.CountryFlag ?? "";
     public string UserEloText => CurrentUser != null

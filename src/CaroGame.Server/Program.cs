@@ -19,7 +19,9 @@ if (!args.Any(a => a.StartsWith("--urls", StringComparison.OrdinalIgnoreCase)) &
 }
 
 // Database SQLite
-string dbPath = Path.Combine(builder.Environment.ContentRootPath, "caro_server.db");
+string baseDbPath = Path.Combine(AppContext.BaseDirectory, "caro_server.db");
+string contentDbPath = Path.Combine(builder.Environment.ContentRootPath, "caro_server.db");
+string dbPath = File.Exists(baseDbPath) ? baseDbPath : (File.Exists(contentDbPath) ? contentDbPath : baseDbPath);
 Console.WriteLine($"[Server] SQLite Database: {Path.GetFullPath(dbPath)}");
 builder.Services.AddDbContext<ServerDbContext>(options =>
 {
@@ -143,9 +145,24 @@ using (var scope = app.Services.CreateScope())
             updEmail.ExecuteNonQuery();
         }
 
-        // Seed default account mailrac0212@gmail.com (Password: Caro@0212) if not already created
-        bool hasUser = db.Users.Any(u => u.Email.ToLower() == "mailrac0212@gmail.com" || u.Username.ToLower() == "mailrac0212");
-        if (!hasUser)
+        // Seed default account mailrac0212@gmail.com and support Testarossa (Password: Caro@0212)
+        using (var seedCmd = conn.CreateCommand())
+        {
+            string hash = PasswordHasher.HashPassword("Caro@0212");
+            seedCmd.CommandText = @"
+                UPDATE Users SET Id = UPPER(Id);
+                UPDATE Users SET Email = 'testarossa@carogame.local', PasswordHash = @hash WHERE LOWER(Username) = 'testarossa';
+                UPDATE Users SET PasswordHash = @hash, Email = 'mailrac0212@gmail.com' WHERE LOWER(Username) = 'mailrac0212';
+            ";
+            var pHash = seedCmd.CreateParameter();
+            pHash.ParameterName = "@hash";
+            pHash.Value = hash;
+            seedCmd.Parameters.Add(pHash);
+            seedCmd.ExecuteNonQuery();
+        }
+
+        bool hasMailrac = db.Users.AsNoTracking().Any(u => u.Username.ToLower() == "mailrac0212" || u.Email.ToLower() == "mailrac0212@gmail.com");
+        if (!hasMailrac)
         {
             var seedUser = new User
             {
@@ -169,6 +186,10 @@ using (var scope = app.Services.CreateScope())
             db.Users.Add(seedUser);
             db.SaveChanges();
             Console.WriteLine("[Server] Khởi tạo tài khoản mẫu: mailrac0212@gmail.com (Mật khẩu: Caro@0212)");
+        }
+        else
+        {
+            Console.WriteLine("[Server] Đã đồng bộ tài khoản mẫu mailrac0212 (Mật khẩu: Caro@0212)");
         }
     }
     catch (Exception ex)
@@ -386,8 +407,15 @@ app.MapPost("/api/auth/login", async (LoginRequestDto req, ServerDbContext db, T
         return Results.BadRequest(new AuthResponseDto { Success = false, Message = "Tên đăng nhập / Email hoặc mật khẩu không chính xác." });
     }
 
-    user.LastLoginAt = DateTime.UtcNow;
-    await db.SaveChangesAsync();
+    try
+    {
+        user.LastLoginAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Không thể cập nhật LastLoginAt khi người dùng đăng nhập");
+    }
 
     string token = tokenService.CreateToken(user.Id);
 
