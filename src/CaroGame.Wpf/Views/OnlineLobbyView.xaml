@@ -1,0 +1,259 @@
+<UserControl x:Class="CaroGame.Wpf.Views.OnlineLobbyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:CaroGame.Wpf.Controls"
+             xmlns:vm="clr-namespace:CaroGame.Wpf.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance vm:OnlineLobbyViewModel}">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
+
+    <Grid Background="#262421">
+        <!-- Top Bar Navigation & User Profile -->
+        <Grid VerticalAlignment="Top" Margin="32,20,32,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Button Content="← Menu chính" Command="{Binding BackToMenuCommand}"
+                        Margin="0,0,10,0" Padding="14,8" Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1" Foreground="#C3C1BE" />
+                <Button Content="👥 Bạn Bè" Command="{Binding OpenFriendsCommand}"
+                        Margin="0,0,10,0" Padding="14,8" Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1" Foreground="#C3C1BE" />
+                <Button Content="🏆 Bảng Xếp Hạng" Command="{Binding OpenLeaderboardCommand}"
+                        Padding="14,8" Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1" Foreground="#C3C1BE" />
+            </StackPanel>
+
+            <!-- State A: User Profile Badge (Logged In) -->
+            <Border HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Background="#302E2B" CornerRadius="12" Padding="12,7"
+                    BorderBrush="#3F3C38" BorderThickness="1">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLoggedIn}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <controls:AvatarControl Avatar="{Binding CurrentUser.Avatar}"
+                                            AvatarIcon="{Binding UserAvatarIcon}"
+                                            Size="34" FontSize="16"
+                                            BorderBrush="#81B64C" BorderThickness="1.5"
+                                            Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,14,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding UserFlag}" FontSize="12" Margin="0,0,4,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding UserDisplayName}" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding UserEloText}" FontSize="11" Foreground="#F59E0B" Margin="0,1,0,0" />
+                    </StackPanel>
+
+                    <Button Content="👤 Hồ Sơ" Command="{Binding OpenProfileCommand}"
+                            Padding="10,5" FontSize="12" Margin="0,0,6,0" />
+                    <Button Content="Đăng Xuất" Command="{Binding LogoutCommand}"
+                            Style="{StaticResource DangerButton}"
+                            Padding="10,5" FontSize="12" />
+                </StackPanel>
+            </Border>
+
+            <!-- State B: Guest Badge (Not Logged In) -->
+            <Border HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Background="#302E2B" CornerRadius="12" Padding="12,7"
+                    BorderBrush="#3F3C38" BorderThickness="1">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsLoggedIn}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="32" Height="32" CornerRadius="16" Background="#262421"
+                            BorderBrush="#3F3C38" BorderThickness="1" Margin="0,0,10,0">
+                        <TextBlock Text="👤" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,14,0">
+                        <TextBlock Text="Khách (Chưa đăng nhập)" FontWeight="Bold" FontSize="12.5" Foreground="#D6D3CD" />
+                        <TextBlock Text="Đăng nhập để lưu điểm Elo" FontSize="10.5" Foreground="#8A8782" />
+                    </StackPanel>
+                    <Button Content="Đăng Nhập" Command="{Binding OpenAuthCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            Padding="12,6" FontSize="12" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Main Content Area (Chess.com Dark Card) -->
+        <Border Width="780" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Background="#302E2B" CornerRadius="18" Padding="36,28"
+                BorderBrush="#3F3C38" BorderThickness="1.5" Margin="0,40,0,0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="35" ShadowDepth="10" Direction="270"
+                                  Color="#000000" Opacity="0.5" />
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- Title & Header -->
+                <TextBlock Text="🌐 ĐẤU ONLINE QUA MÃ PHÒNG"
+                           FontSize="20" FontWeight="Black" Foreground="#FFFFFF"
+                           HorizontalAlignment="Center" Margin="0,0,0,4" />
+                <TextBlock Text="Đấu thời gian thực với bạn bè, tích lũy điểm Rank Elo và trò chuyện trực tiếp"
+                           FontSize="12.5" Foreground="#9E9C99"
+                           HorizontalAlignment="Center" Margin="0,0,0,20" />
+
+                <!-- Grid of 2 Cards: Create vs Join -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.2*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Card: Create Room with Online Options -->
+                    <Border Grid.Column="0" Background="#262421" CornerRadius="12"
+                            BorderBrush="#3F3C38" BorderThickness="1" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="TẠO PHÒNG MỚI" FontSize="13" FontWeight="Bold"
+                                       Foreground="#FFFFFF" Margin="0,0,0,10" />
+
+                            <TextBlock Text="Mã phòng của bạn:" FontSize="11" Foreground="#9E9C99" Margin="0,0,0,4" />
+                            <Grid Margin="0,0,0,10">
+                                <TextBox Text="{Binding RoomCode, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="15" FontWeight="Bold" HorizontalContentAlignment="Center"
+                                         VerticalContentAlignment="Center" Height="42" Padding="12,0"
+                                         CharacterCasing="Upper" />
+                                <Button Content="📋" Command="{Binding CopyRoomCodeCommand}"
+                                         ToolTip="Sao chép mã phòng"
+                                         HorizontalAlignment="Right" Width="38" Height="38"
+                                         Margin="0,0,2,0" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF" />
+                            </Grid>
+
+                            <!-- Luật chơi Online -->
+                            <TextBlock Text="Luật chơi ván đấu:" FontSize="11" Foreground="#9E9C99" Margin="0,0,0,4" />
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <RadioButton Grid.Column="0" Content="Chặn 2 đầu" IsChecked="{Binding IsVietnameseRule}"
+                                             Style="{StaticResource SegmentButton}" GroupName="OnlineRuleGroup"
+                                             Padding="6,6" FontSize="12" HorizontalAlignment="Stretch" />
+                                <RadioButton Grid.Column="1" Content="Tự do" IsChecked="{Binding IsFreeRule}"
+                                             Style="{StaticResource SegmentButton}" GroupName="OnlineRuleGroup"
+                                             Padding="6,6" FontSize="12" HorizontalAlignment="Stretch" />
+                            </Grid>
+
+                            <!-- Chế độ Đấu Rank -->
+                            <CheckBox Content="Đấu Xếp Hạng (Tính điểm Elo)" IsChecked="{Binding IsRanked}"
+                                      FontSize="12" Margin="4,0,0,14" />
+
+                            <!-- Host Waiting State or Button -->
+                            <StackPanel Visibility="{Binding IsHosting, Converter={StaticResource BoolToVis}}">
+                                <Border Background="#3B3220" BorderBrush="#78591E" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="⏳ ĐANG CHỜ ĐỐI THỦ VÀO..."
+                                                   FontSize="12" FontWeight="Bold" Foreground="#F59E0B"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock Text="Gửi mã phòng trên cho bạn của bạn"
+                                                   FontSize="11" Foreground="#E2DFD8"
+                                                   HorizontalAlignment="Center" Margin="0,3,0,0" />
+                                    </StackPanel>
+                                </Border>
+                                <Button Content="HỦY PHÒNG" Command="{Binding CancelHostCommand}"
+                                        Style="{StaticResource DangerButton}"
+                                        Padding="0,8" />
+                            </StackPanel>
+
+                            <Button Content="TẠO PHÒNG" Command="{Binding CreateRoomCommand}"
+                                    Padding="0,11">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsHosting}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Right Card: Join Room -->
+                    <Border Grid.Column="2" Background="#262421" CornerRadius="12"
+                            BorderBrush="#3F3C38" BorderThickness="1" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="THAM GIA PHÒNG" FontSize="13" FontWeight="Bold"
+                                       Foreground="#FFFFFF" Margin="0,0,0,10" />
+
+                            <TextBlock Text="Nhập mã phòng bạn nhận được:" FontSize="11" Foreground="#9E9C99" Margin="0,0,0,4" />
+                            <TextBox Text="{Binding JoinCode, UpdateSourceTrigger=PropertyChanged}"
+                                     FontSize="15" FontWeight="Bold" HorizontalContentAlignment="Center"
+                                     VerticalContentAlignment="Center" Height="42" Padding="12,0" Margin="0,0,0,14"
+                                     CharacterCasing="Upper" />
+
+                            <Button Style="{StaticResource AccentBlueButton}"
+                                    Content="VÀO PHÒNG NGAY" Command="{Binding JoinRoomCommand}"
+                                    Padding="0,11" Margin="0,0,0,12" />
+
+                            <TextBlock Text="Bạn sẽ thi đấu với luật do chủ phòng thiết lập."
+                                       FontSize="11" Foreground="#75736F" TextWrapping="Wrap" TextAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Server Address Config -->
+                <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,0,14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Máy chủ SignalR:" FontSize="11.5"
+                                   VerticalAlignment="Center" Foreground="#9E9C99" Margin="0,0,10,0" />
+                        <TextBox Grid.Column="1" Text="{Binding ServerUrl, UpdateSourceTrigger=PropertyChanged}"
+                                 FontSize="12" Foreground="#FFFFFF" Height="34" VerticalContentAlignment="Center"
+                                 Padding="10,0" />
+                    </Grid>
+                </Border>
+
+                <!-- Status / Error Notification Banner -->
+                <Border CornerRadius="8" Padding="12,10" BorderThickness="1">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="#262421" />
+                            <Setter Property="BorderBrush" Value="#3F3C38" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                    <Setter Property="Background" Value="#3D2424" />
+                                    <Setter Property="BorderBrush" Value="#613232" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="12.5"
+                               HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#9E9C99" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsError}" Value="True">
+                                        <Setter Property="Foreground" Value="#FFA3A3" />
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Border>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

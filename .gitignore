@@ -1,0 +1,79 @@
+# ==========================================
+# .gitignore for Cờ Caro Arena (.NET 9 + WPF)
+# Bảo mật tuyệt đối: KHÔNG lộ mật khẩu, DB, hay binaries
+# ==========================================
+
+# 1. BẢO MẬT & THÔNG TIN BÍ MẬT (SECRETS)
+# ------------------------------------------
+appsettings.Local.json
+appsettings.*.local.json
+*.local.json
+appsettings.Production.json
+secrets.json
+.env
+.env.*
+*.pfx
+*.key
+*.pem
+*.cert
+
+# 2. CƠ SỞ DỮ LIỆU & DỮ LIỆU THỰC TẾ (DATABASES)
+# ------------------------------------------
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+session.json
+*.session
+
+# 3. FILE NHỊ PHÂN & BUILD OUTPUT (BINARIES)
+# (Các file .exe, .zip phát hành sẽ đẩy lên GitHub Releases, không commit vào git)
+# ------------------------------------------
+bin/
+obj/
+publish/
+[Bb]in/
+[Oo]bj/
+[Pp]ublish/
+*.exe
+*.dll
+*.pdb
+*.zip
+*.7z
+*.tar.gz
+*.msi
+
+# 4. CẤU HÌNH IDE & MÔI TRƯỜNG PHÁT TRIỂN
+# ------------------------------------------
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# 5. KẾT QUẢ KIỂM THỬ (TEST RESULTS & LOGS)
+# ------------------------------------------
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+*.log
+logs/
+
+# 6. AI TOOLING & AGENT CACHES
+# ------------------------------------------
+graphify-out/
+.claude/
+.agents/
+.playwright-cli/
+
+# 7. FILE TẠM HỆ ĐIỀU HÀNH
+# ------------------------------------------
+Thumbs.db
+desktop.ini
+.DS_Store
+$RECYCLE.BIN/

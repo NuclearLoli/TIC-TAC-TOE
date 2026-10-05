@@ -1,0 +1,65 @@
+<UserControl x:Class="CaroGame.Wpf.Views.ReplayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:CaroGame.Wpf.Controls"
+             xmlns:vm="clr-namespace:CaroGame.Wpf.ViewModels"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance vm:ReplayViewModel}"
+             d:DesignHeight="800" d:DesignWidth="1000">
+
+    <Grid Background="#262421">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Top Bar -->
+        <Border Grid.Row="0" Background="#1E1D1B" BorderBrush="#36332E" BorderThickness="0,0,0,1" Padding="20,10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" Direction="270" ShadowDepth="2" Color="#000000" Opacity="0.4" />
+            </Border.Effect>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Content="◀ Danh Sách Lịch Sử" Command="{Binding BackToHistoryCommand}" Padding="12,6" />
+
+                <!-- Thông tin ván đấu -->
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="CHẾ ĐỘ REPLAY" FontSize="14" FontWeight="Black" Foreground="#FFFFFF" HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding GameInfoText}" FontSize="12.5" Foreground="#9E9C99" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                </StackPanel>
+
+                <!-- Điều khiển bước đi -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
+                            CornerRadius="8" Padding="12,6" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding StepInfoText}" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                    </Border>
+
+                    <Button Content="◀ Trước" Command="{Binding PreviousMoveCommand}" IsEnabled="{Binding CanGoPrevious}"
+                            Padding="10,6" Margin="0,0,6,0" />
+
+                    <Button Content="Sau ▶" Command="{Binding NextMoveCommand}" IsEnabled="{Binding CanGoNext}"
+                            Padding="10,6" Margin="0,0,10,0" />
+
+                    <ToggleButton Content="▶ Tự Động Chạy" IsChecked="{Binding IsAutoPlaying}" Command="{Binding ToggleAutoPlayCommand}"
+                                  Padding="14,8" Cursor="Hand" FontWeight="Bold" FontSize="13"
+                                  Background="#3C3935" Foreground="#FFFFFF" BorderBrush="#4D4A45" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Canvas Bàn cờ Replay -->
+        <controls:InfiniteCaroCanvas Grid.Row="1"
+                                     Board="{Binding Board}"
+                                     LastMove="{Binding LastMove}"
+                                     IsInteractive="False" />
+    </Grid>
+</UserControl>

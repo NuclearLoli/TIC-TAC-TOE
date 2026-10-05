@@ -1,0 +1,319 @@
+<UserControl x:Class="CaroGame.Wpf.Views.GamePlayView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:CaroGame.Wpf.Controls"
+             xmlns:conv="clr-namespace:CaroGame.Wpf.Converters"
+             xmlns:vm="clr-namespace:CaroGame.Wpf.ViewModels"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance vm:GamePlayViewModel}"
+             d:DesignHeight="800" d:DesignWidth="1100">
+
+    <UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    </UserControl.Resources>
+
+    <Grid Background="#262421">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Thanh điều khiển trên cùng (Chess.com Top Bar) -->
+        <Border Grid.Row="0" Background="#1E1D1B" BorderBrush="#36332E" BorderThickness="0,0,0,1"
+                Padding="18,10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" Direction="270" ShadowDepth="2" Color="#000000" Opacity="0.4" />
+            </Border.Effect>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Nhóm nút điều hướng bên trái -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="◀ Menu" Command="{Binding BackToMenuCommand}"
+                            Margin="0,0,8,0" Padding="12,6" ToolTip="Trở về màn hình chính" />
+
+                    <!-- Offline: Ván mới -->
+                    <Button Content="🔄 Ván Mới" Command="{Binding StartNewGameCommand}"
+                            Margin="0,0,10,0" Padding="12,6" ToolTip="Làm mới lại toàn bộ bàn cờ">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOnlineMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Online: Đầu hàng khi đang chơi -->
+                    <Button Content="🏳️ Đầu Hàng" Command="{Binding SurrenderCommand}"
+                            Margin="0,0,8,0" ToolTip="Chấp nhận xử thua ván đấu hiện tại">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource DangerButton}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsOnlineMode}" Value="True" />
+                                            <Condition Binding="{Binding GameState}" Value="Playing" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Online: Yêu cầu đấu lại khi ván kết thúc -->
+                    <Button Content="🔄 Yêu Cầu Đấu Lại" Command="{Binding StartNewGameCommand}"
+                            Margin="0,0,8,0" ToolTip="Gửi lời mời tái đấu tới đối thủ">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsOnlineMode}" Value="True" />
+                                            <Condition Binding="{Binding IsRematchRequestedByOpponent}" Value="False" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                    <DataTrigger Binding="{Binding GameState}" Value="Playing">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Online: Chấp nhận đấu lại -->
+                    <Button Content="✅ Chấp Nhận Đấu Lại" Command="{Binding AcceptRematchCommand}"
+                            Margin="0,0,8,0" ToolTip="Bắt đầu ván đấu lại ngay">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource AccentBlueButton}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsOnlineMode}" Value="True" />
+                                            <Condition Binding="{Binding IsRematchRequestedByOpponent}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Undo / Redo (Offline) -->
+                    <Button Content="↩ Undo" Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}"
+                            Margin="0,0,6,0" Padding="10,6" ToolTip="Rút lại nước vừa đánh">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOnlineMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Content="↪ Redo" Command="{Binding RedoCommand}" IsEnabled="{Binding CanRedo}"
+                            Padding="10,6" ToolTip="Đánh lại nước vừa rút">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsOnlineMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+
+                <!-- Trạng thái trận đấu ở trung tâm -->
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- Thông tin đối đầu Online (Tên, Rank Elo, Phe cờ) -->
+                    <Border Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVisibility}}"
+                            Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
+                            CornerRadius="10" Padding="12,3" Margin="0,0,0,4" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <controls:AvatarControl Avatar="{Binding MyAvatar}" Size="22" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding MyDisplayName}" FontWeight="Bold" FontSize="12.5" Foreground="#FFFFFF" />
+                            <TextBlock Text="{Binding MyElo, StringFormat=' ({0} Elo)'}" FontWeight="SemiBold" FontSize="11" Foreground="#F59E0B" />
+                            <Border Background="#1E334D" CornerRadius="4" Padding="5,1" Margin="6,0,8,0">
+                                <TextBlock Text="{Binding MyOnlineRole}" FontWeight="Black" FontSize="11" Foreground="#38BDF8" />
+                            </Border>
+
+                            <TextBlock Text="⚔️" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Center" />
+
+                            <controls:AvatarControl Avatar="{Binding OpponentAvatar}" Size="22" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding OpponentDisplayName}" FontWeight="Bold" FontSize="12.5" Foreground="#FFFFFF" />
+                            <TextBlock Text="{Binding OpponentElo, StringFormat=' ({0} Elo)'}" FontWeight="SemiBold" FontSize="11" Foreground="#F59E0B" />
+                            <Border Background="#3F2727" CornerRadius="4" Padding="5,1" Margin="6,0,0,0">
+                                <TextBlock Text="{Binding OpponentOnlineRole}" FontWeight="Black" FontSize="11" Foreground="#EF4444" />
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1"
+                            CornerRadius="14" Padding="18,5" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="14.5" FontWeight="Bold"
+                                   Foreground="#FFFFFF" HorizontalAlignment="Center" />
+                    </Border>
+                </StackPanel>
+
+                <!-- Nút Chat, Bộ đếm thời gian & Số nước đi bên phải -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Nút Chat thời gian thực (Online mode) -->
+                    <Button Command="{Binding ToggleChatCommand}" Margin="0,0,10,0" Padding="10,6" ToolTip="Trò chuyện với đối thủ"
+                            Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="💬 Chat" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <Border Background="#EF4444" CornerRadius="8" Padding="6,1" Margin="6,0,0,0"
+                                    Visibility="{Binding UnreadChatCount, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{Binding UnreadChatCount}" FontSize="10.5" FontWeight="Bold" Foreground="#FFFFFF" />
+                            </Border>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Số nước đi -->
+                    <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
+                            CornerRadius="8" Padding="10,5" Margin="0,0,8,0" ToolTip="Tổng số nước đi">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🎯 " FontSize="12" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding MoveCount}" FontSize="13.5" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Bộ đếm thời gian TỔNG TRẬN ĐẤU -->
+                    <Border Background="#1A2733" BorderBrush="#26415C" BorderThickness="1"
+                            CornerRadius="8" Padding="10,5" Margin="0,0,8,0" ToolTip="Thời gian tổng trận đấu">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⏱ " FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding FormattedTotalTime}" FontSize="13.5" FontWeight="Black"
+                                       Foreground="#38BDF8" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Đồng hồ đếm ngược từng lượt -->
+                    <Border Background="#3D2424" BorderBrush="#5C3636" BorderThickness="1"
+                            CornerRadius="8" Padding="10,5" ToolTip="Thời gian còn lại của lượt này"
+                            Visibility="{Binding IsTurnTimerEnabled, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⏳ " FontSize="12" Foreground="#EF4444" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding RemainingSeconds, StringFormat='{}{0}s'}" FontSize="13.5"
+                                       FontWeight="Black" Foreground="#EF4444" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Bàn cờ Canvas vô hạn & Khung Chat -->
+        <Grid Grid.Row="1">
+            <controls:InfiniteCaroCanvas x:Name="CaroCanvas"
+                                         Board="{Binding Board}"
+                                         LastMove="{Binding LastMove}"
+                                         WinningLine="{Binding WinningLine}"
+                                         CellClickedCommand="{Binding CellClickedCommand}"
+                                         IsInteractive="True" />
+
+            <!-- Nút hướng dẫn chuột gọn gàng góc dưới bên trái -->
+            <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="18"
+                    Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1"
+                    CornerRadius="18" Width="36" Height="36" Cursor="Help"
+                    ToolTip="Cuộn chuột: Phóng to / Thu nhỏ&#x0a;Chuột phải: Kéo bàn cờ&#x0a;Chuột giữa: Đưa về tâm (0,0)">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="12" Direction="270" ShadowDepth="2" Color="#000000" Opacity="0.4" />
+                </Border.Effect>
+                <TextBlock Text="?" FontWeight="Bold" FontSize="14" Foreground="#9E9C99"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+
+            <!-- Khung Chat Trực Tiếp (Collapsible Drawer góc phải - Dark Theme) -->
+            <Border HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="310"
+                    Background="#262421" BorderBrush="#36332E" BorderThickness="1,0,0,0"
+                    Visibility="{Binding IsChatOpen, Converter={StaticResource BoolToVisibility}}">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20" ShadowDepth="4" Direction="180" Color="#000000" Opacity="0.5" />
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="46" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Chat Header -->
+                    <Border Grid.Row="0" Background="#1E1D1B" BorderBrush="#36332E" BorderThickness="0,0,0,1" Padding="14,0">
+                        <Grid VerticalAlignment="Center">
+                            <TextBlock Text="💬 TRÒ CHUYỆN" FontWeight="Bold" FontSize="12.5" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                            <Button Content="✕" Command="{Binding ToggleChatCommand}"
+                                    HorizontalAlignment="Right" Width="28" Height="28"
+                                    Background="Transparent" BorderThickness="0" Foreground="#9E9C99" Cursor="Hand" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Chat Message List -->
+                    <ScrollViewer x:Name="ChatScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="10">
+                        <ItemsControl ItemsSource="{Binding ChatMessages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="8" Padding="10,6" Margin="0,3">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#302E2B" />
+                                                <Setter Property="HorizontalAlignment" Value="Left" />
+                                                <Setter Property="Margin" Value="0,3,40,3" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsMe}" Value="True">
+                                                        <Setter Property="Background" Value="#1E3A5F" />
+                                                        <Setter Property="HorizontalAlignment" Value="Right" />
+                                                        <Setter Property="Margin" Value="40,3,0,3" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding SenderName}" FontSize="10.5" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,0,2" />
+                                            <TextBlock Text="{Binding Message}" FontSize="12.5" TextWrapping="Wrap" Foreground="#FFFFFF" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Chat Input Bar -->
+                    <Border Grid.Row="2" Background="#1E1D1B" BorderBrush="#36332E" BorderThickness="0,1,0,0" Padding="10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Text="{Binding NewChatMessage, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="34" VerticalContentAlignment="Center" Padding="8,0" Margin="0,0,6,0">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Return" Command="{Binding SendChatMessageCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <Button Grid.Column="1" Content="Gửi" Command="{Binding SendChatMessageCommand}"
+                                    Style="{StaticResource AccentBlueButton}" Padding="12,0" Height="34" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,84 @@
+<UserControl x:Class="CaroGame.Wpf.Views.HistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:CaroGame.Wpf.ViewModels"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance vm:HistoryViewModel}"
+             d:DesignHeight="700" d:DesignWidth="900">
+
+    <Grid Background="#262421">
+        <Border MaxWidth="940" VerticalAlignment="Center" Margin="30"
+                Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1.5"
+                CornerRadius="20" Padding="36">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="35" Direction="270" ShadowDepth="10" Color="#000000" Opacity="0.5" />
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- Header -->
+                <Grid Margin="0,0,0,20">
+                    <TextBlock Text="LỊCH SỬ CÁC VÁN ĐẤU" FontSize="22" FontWeight="Black"
+                               Foreground="#FFFFFF" VerticalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="⟳ Tải lại" Command="{Binding LoadGamesCommand}"
+                                Margin="0,0,10,0" ToolTip="Làm mới danh sách ván đấu" Padding="12,6" />
+                        <Button Content="◀ Quay lại" Command="{Binding BackToMenuCommand}" Padding="12,6" />
+                    </StackPanel>
+                </Grid>
+
+                <DataGrid ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}"
+                          AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                          MaxHeight="420" Background="#262421" BorderBrush="#3F3C38"
+                          BorderThickness="1" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                          HorizontalGridLinesBrush="#36332E" RowHeight="40" FontSize="13"
+                          Foreground="#FFFFFF">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#21201D"/>
+                            <Setter Property="Foreground" Value="#9E9C99"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Padding" Value="12,10"/>
+                            <Setter Property="BorderBrush" Value="#36332E"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="#262421"/>
+                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#302E2B"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#45423E"/>
+                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Thời Gian" Binding="{Binding PlayedAt, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="160" />
+                        <DataGridTextColumn Header="Chế Độ" Binding="{Binding GameMode}" Width="90" />
+                        <DataGridTextColumn Header="Độ Khó" Binding="{Binding AiDifficulty}" Width="85" />
+                        <DataGridTextColumn Header="Luật Chơi" Binding="{Binding RuleType}" Width="120" />
+                        <DataGridTextColumn Header="Người Thắng" Binding="{Binding Winner}" Width="110" />
+                        <DataGridTextColumn Header="Số Nước" Binding="{Binding TotalMoves}" Width="85" />
+                        <DataGridTextColumn Header="Thời Lượng (s)" Binding="{Binding DurationSeconds}" Width="110" />
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                    <Button Style="{StaticResource PrimaryButton}"
+                            Content="▶  Xem Replay Ván Này" Command="{Binding ReplayGameCommand}"
+                            Margin="0,0,10,0" Padding="16,8" />
+
+                    <Button Style="{StaticResource DangerButton}"
+                            Content="🗑  Xóa Bản Ghi" Command="{Binding DeleteGameCommand}" Padding="14,8" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,39 @@
+<UserControl x:Class="CaroGame.Wpf.Controls.AvatarControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             x:Name="Root"
+             d:DesignHeight="40" d:DesignWidth="40">
+    <Grid Width="{Binding Size, ElementName=Root}" Height="{Binding Size, ElementName=Root}">
+        <!-- Preset Emoji Icon Container -->
+        <Border x:Name="EmojiBorder"
+                Background="#2B2623"
+                BorderBrush="{Binding BorderBrush, ElementName=Root}"
+                BorderThickness="{Binding BorderThickness, ElementName=Root}"
+                CornerRadius="999"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <TextBlock x:Name="EmojiText"
+                       Text="{Binding DisplayIcon, ElementName=Root}"
+                       FontSize="{Binding FontSize, ElementName=Root}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+        </Border>
+
+        <!-- Custom Uploaded Image Display (Circular) -->
+        <Ellipse x:Name="ImageEllipse"
+                 Width="{Binding Size, ElementName=Root}"
+                 Height="{Binding Size, ElementName=Root}"
+                 Stroke="{Binding BorderBrush, ElementName=Root}"
+                 StrokeThickness="{Binding BorderThickness, ElementName=Root}"
+                 Visibility="Collapsed"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center">
+            <Ellipse.Fill>
+                <ImageBrush x:Name="AvatarBrush" Stretch="UniformToFill" />
+            </Ellipse.Fill>
+        </Ellipse>
+    </Grid>
+</UserControl>
