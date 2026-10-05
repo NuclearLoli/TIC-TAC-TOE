@@ -74,6 +74,7 @@ public partial class MainViewModel : ViewModelBase
     public async Task Logout()
     {
         await _networkService.LogoutAsync();
+        _navigationService.NavigateToAuth(returnToMenu: false);
     }
 
     public void SetView(ViewModelBase view)

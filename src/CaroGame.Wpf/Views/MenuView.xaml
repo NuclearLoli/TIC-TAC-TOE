@@ -12,6 +12,7 @@
 
     <UserControl.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:BoolToVisibilityConverter x:Key="InvertedBoolToVisibility" Invert="True" />
     </UserControl.Resources>
 
     <Grid Background="#262421">
@@ -81,9 +82,14 @@
                             <TextBlock Text="{Binding UserStatsText}" FontSize="10" Foreground="#9E9C99" Margin="0,2,0,0" />
                         </StackPanel>
                         <Button Content="👤 Hồ Sơ" Command="{Binding OpenProfileCommand}"
-                                Padding="7,4" FontSize="11" Margin="0,0,5,0" ToolTip="Xem hồ sơ &amp; Tùy biến tài khoản" />
+                                Padding="7,4" FontSize="11" Margin="0,0,5,0" ToolTip="Xem hồ sơ &amp; Tùy biến tài khoản"
+                                Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibility}}" />
                         <Button Content="Đăng Xuất" Command="{Binding LogoutCommand}"
-                                Style="{StaticResource DangerButton}" Padding="7,4" FontSize="11" ToolTip="Đăng xuất tài khoản" />
+                                Style="{StaticResource DangerButton}" Padding="7,4" FontSize="11" ToolTip="Đăng xuất tài khoản"
+                                Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibility}}" />
+                        <Button Content="🔑 Đăng Nhập" Command="{Binding OpenLoginCommand}"
+                                Style="{StaticResource PrimaryButton}" Padding="8,4" FontSize="11" ToolTip="Đăng nhập hoặc đăng ký tài khoản"
+                                Visibility="{Binding IsLoggedIn, Converter={StaticResource InvertedBoolToVisibility}}" />
                     </StackPanel>
                 </Border>
             </Grid>

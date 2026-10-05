@@ -179,7 +179,7 @@ public partial class OnlineLobbyViewModel : ViewModelBase
     public async Task Logout()
     {
         await _networkService.LogoutAsync();
-        StatusMessage = "Đã đăng xuất tài khoản.";
+        _navigationService.NavigateToAuth(returnToMenu: false);
     }
 
     [RelayCommand]

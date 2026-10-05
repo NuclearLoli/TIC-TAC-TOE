@@ -189,6 +189,7 @@ public partial class MenuViewModel : ViewModelBase
     private async Task Logout()
     {
         await _networkService.LogoutAsync();
+        _navigationService.NavigateToAuth(returnToMenu: false);
     }
 
     [RelayCommand]
