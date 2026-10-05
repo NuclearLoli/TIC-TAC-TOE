@@ -22,50 +22,53 @@
         </Grid.RowDefinitions>
 
         <!-- TOP BAR: Navigation, Logo & Profile Status -->
-        <Border Grid.Row="0" Background="#21201D" BorderBrush="#36332E" BorderThickness="0,0,0,1" Padding="28,14">
+        <Border Grid.Row="0" Background="#21201D" BorderBrush="#36332E" BorderThickness="0,0,0,1" Padding="24,12">
             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
                 <!-- Left: Branding -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <Border Background="#3F2727" CornerRadius="8" Width="32" Height="32" Margin="0,0,8,0">
-                        <TextBlock Text="✕" FontSize="17" FontWeight="Black" Foreground="#EF4444"
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <Border Background="#3F2727" CornerRadius="8" Width="30" Height="30" Margin="0,0,8,0">
+                        <TextBlock Text="✕" FontSize="16" FontWeight="Black" Foreground="#EF4444"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
-                    <Border Background="#1E334D" CornerRadius="8" Width="32" Height="32" Margin="0,0,12,0">
-                        <TextBlock Text="◯" FontSize="17" FontWeight="Black" Foreground="#38BDF8"
+                    <Border Background="#1E334D" CornerRadius="8" Width="30" Height="30" Margin="0,0,10,0">
+                        <TextBlock Text="◯" FontSize="16" FontWeight="Black" Foreground="#38BDF8"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
-                    <TextBlock Text="CỜ CARO ARENA" FontWeight="Black" FontSize="18" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                    <TextBlock Text="CỜ CARO ARENA" FontWeight="Black" FontSize="17" Foreground="#FFFFFF" VerticalAlignment="Center" />
                 </StackPanel>
 
-                <!-- Center: Quick Links -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Button Content="👤 Hồ Sơ" Command="{Binding OpenProfileCommand}"
-                            Margin="0,0,8,0" Padding="12,7" Background="#302E2B" BorderBrush="#3F3C38"
-                            Foreground="#C3C1BE" ToolTip="Hồ sơ cá nhân &amp; Tùy biến tài khoản" />
+                <!-- Center/Right: Quick Links (Never overlaps Profile pill) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0">
                     <Button Content="👥 Bạn Bè" Command="{Binding OpenFriendsCommand}"
-                            Margin="0,0,8,0" Padding="12,7" Background="#302E2B" BorderBrush="#3F3C38"
+                            Margin="0,0,8,0" Padding="10,6" Background="#302E2B" BorderBrush="#3F3C38"
                             Foreground="#C3C1BE" ToolTip="Danh sách bạn bè &amp; Thách đấu" />
                     <Button Content="🏆 Bảng Xếp Hạng" Command="{Binding OpenLeaderboardCommand}"
-                            Margin="0,0,8,0" Padding="12,7" Background="#302E2B" BorderBrush="#3F3C38"
+                            Margin="0,0,8,0" Padding="10,6" Background="#302E2B" BorderBrush="#3F3C38"
                             Foreground="#C3C1BE" ToolTip="Xem bảng xếp hạng Elo toàn server" />
                     <Button Content="📜 Lịch Sử Đấu" Command="{Binding OpenHistoryCommand}"
-                            Margin="0,0,8,0" Padding="12,7" Background="#302E2B" BorderBrush="#3F3C38"
+                            Margin="0,0,8,0" Padding="10,6" Background="#302E2B" BorderBrush="#3F3C38"
                             Foreground="#C3C1BE" ToolTip="Xem lại lịch sử và replay các ván đấu" />
                     <Button Content="⚙️ Cài Đặt" Command="{Binding OpenSettingsCommand}"
-                            Padding="12,7" Background="#302E2B" BorderBrush="#3F3C38"
+                            Padding="10,6" Background="#302E2B" BorderBrush="#3F3C38"
                             Foreground="#C3C1BE" ToolTip="Tùy chỉnh âm lượng và hiệu ứng" />
                 </StackPanel>
 
                 <!-- Right: Profile Pill (Chess.com Dark Theme) -->
                 <!-- State A: Logged In -->
-                <Border HorizontalAlignment="Right" VerticalAlignment="Center"
+                <Border Grid.Column="2" VerticalAlignment="Center"
                         Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1"
-                        CornerRadius="12" Padding="10,6"
+                        CornerRadius="12" Padding="10,5"
                         Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVisibility}}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <controls:AvatarControl Avatar="{Binding CurrentUser.Avatar}"
                                                 AvatarIcon="{Binding UserAvatarIcon}"
-                                                Size="34" FontSize="16"
+                                                Size="32" FontSize="15"
                                                 BorderBrush="#81B64C" BorderThickness="1.5"
                                                 Margin="0,0,10,0" VerticalAlignment="Center" />
                         <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
@@ -79,16 +82,16 @@
                             <TextBlock Text="{Binding UserStatsText}" FontSize="10.5" Foreground="#9E9C99" Margin="0,2,0,0" />
                         </StackPanel>
                         <Button Content="👤 Hồ Sơ" Command="{Binding OpenProfileCommand}"
-                                Padding="8,4" FontSize="11" Margin="0,0,6,0" />
+                                Padding="8,4" FontSize="11" Margin="0,0,6,0" ToolTip="Xem hồ sơ &amp; Tùy biến tài khoản" />
                         <Button Content="Đăng Xuất" Command="{Binding LogoutCommand}"
-                                Style="{StaticResource DangerButton}" Padding="8,4" FontSize="11" />
+                                Style="{StaticResource DangerButton}" Padding="8,4" FontSize="11" ToolTip="Đăng xuất tài khoản" />
                     </StackPanel>
                 </Border>
 
                 <!-- State B: Guest User -->
-                <Border HorizontalAlignment="Right" VerticalAlignment="Center"
+                <Border Grid.Column="2" VerticalAlignment="Center"
                         Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1"
-                        CornerRadius="12" Padding="12,6">
+                        CornerRadius="12" Padding="10,5">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Visible" />
@@ -100,17 +103,17 @@
                         </Style>
                     </Border.Style>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Width="32" Height="32" CornerRadius="16" Background="#262421" BorderBrush="#3F3C38" BorderThickness="1" Margin="0,0,10,0">
-                            <TextBlock Text="👤" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Border Width="30" Height="30" CornerRadius="15" Background="#262421" BorderBrush="#3F3C38" BorderThickness="1" Margin="0,0,8,0">
+                            <TextBlock Text="👤" FontSize="13" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
-                            <TextBlock Text="Khách (Chưa đăng nhập)" FontWeight="Bold" FontSize="12.5" Foreground="#D6D3CD" />
-                            <TextBlock Text="Đăng nhập để lưu điểm Elo" FontSize="10.5" Foreground="#8A8782" />
+                        <StackPanel VerticalAlignment="Center" Margin="0,0,10,0">
+                            <TextBlock Text="Khách (Chưa đăng nhập)" FontWeight="Bold" FontSize="12" Foreground="#D6D3CD" />
+                            <TextBlock Text="Đăng nhập để lưu điểm Elo" FontSize="10" Foreground="#8A8782" />
                         </StackPanel>
                         <Button Content="Đăng Nhập" Command="{Binding OpenLoginCommand}"
-                                Style="{StaticResource PrimaryButton}" Padding="10,5" FontSize="11.5" Margin="0,0,6,0" />
+                                Style="{StaticResource PrimaryButton}" Padding="8,4" FontSize="11" Margin="0,0,6,0" />
                         <Button Content="Đăng Ký" Command="{Binding OpenRegisterCommand}"
-                                Padding="10,5" FontSize="11.5" />
+                                Padding="8,4" FontSize="11" />
                     </StackPanel>
                 </Border>
             </Grid>

@@ -65,6 +65,7 @@ public partial class AvatarControl : UserControl
         BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#453E3B"));
         BorderThickness = new Thickness(1.5);
         FontSize = 18;
+        Loaded += (s, e) => UpdateVisual();
         UpdateVisual();
     }
 
@@ -92,13 +93,14 @@ public partial class AvatarControl : UserControl
             ImageEllipse.Visibility = Visibility.Collapsed;
             EmojiBorder.Visibility = Visibility.Visible;
 
+            string icon;
             if (!string.IsNullOrEmpty(AvatarIcon) && AvatarIcon != "👤")
             {
-                DisplayIcon = AvatarIcon;
+                icon = AvatarIcon;
             }
             else
             {
-                DisplayIcon = (avatar?.ToLowerInvariant()) switch
+                icon = (avatar?.ToLowerInvariant()) switch
                 {
                     "knight" => "⚔️",
                     "ninja" => "🥷",
@@ -109,8 +111,15 @@ public partial class AvatarControl : UserControl
                     "lightning" => "⚡",
                     "shield" => "🛡️",
                     "star" => "🌟",
-                    _ => "👑"
+                    "king" => "👑",
+                    _ => (!string.IsNullOrEmpty(AvatarIcon) ? AvatarIcon : "👑")
                 };
+            }
+
+            DisplayIcon = icon;
+            if (EmojiText != null)
+            {
+                EmojiText.Text = icon;
             }
         }
     }

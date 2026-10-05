@@ -88,8 +88,9 @@ public static class ImageHelper
                 int commaIdx = avatar.IndexOf(',');
                 if (commaIdx >= 0)
                 {
-                    string base64 = avatar[(commaIdx + 1)..];
-                    byte[] bytes = Convert.FromBase64String(base64);
+                    string rawBase64 = avatar[(commaIdx + 1)..];
+                    string cleanBase64 = rawBase64.Trim().Replace(" ", "+").Replace("\r", "").Replace("\n", "");
+                    byte[] bytes = Convert.FromBase64String(cleanBase64);
 
                     using var ms = new MemoryStream(bytes);
                     var bi = new BitmapImage();

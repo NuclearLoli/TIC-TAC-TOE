@@ -17,9 +17,12 @@
                 VerticalAlignment="Stretch">
             <TextBlock x:Name="EmojiText"
                        Text="{Binding DisplayIcon, ElementName=Root}"
+                       FontFamily="Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, Segoe UI Symbol, Segoe UI"
                        FontSize="{Binding FontSize, ElementName=Root}"
+                       Foreground="#FFFFFF"
                        HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+                       VerticalAlignment="Center"
+                       TextAlignment="Center" />
         </Border>
 
         <!-- Custom Uploaded Image Display (Circular) -->

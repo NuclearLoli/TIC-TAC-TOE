@@ -15,6 +15,7 @@ if (!args.Any(a => a.StartsWith("--urls", StringComparison.OrdinalIgnoreCase)) &
 
 // Database SQLite
 string dbPath = Path.Combine(builder.Environment.ContentRootPath, "caro_server.db");
+Console.WriteLine($"[Server] SQLite Database: {Path.GetFullPath(dbPath)}");
 builder.Services.AddDbContext<ServerDbContext>(options =>
 {
     options.UseSqlite($"Data Source={dbPath}");
@@ -38,19 +39,53 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Ensure Database exists on startup
+// Ensure Database exists on startup without duplicate column errors
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
     db.Database.EnsureCreated();
 
-    // Auto-migrate new profile columns if existing DB
-    try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN Avatar TEXT DEFAULT 'king';"); } catch { }
-    try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN Country TEXT DEFAULT 'VN';"); } catch { }
-    try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN Bio TEXT DEFAULT 'Đam mê cờ Caro!';"); } catch { }
-    try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN PeakElo INTEGER DEFAULT 1000;"); } catch { }
-    try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN WinStreak INTEGER DEFAULT 0;"); } catch { }
-    try { db.Database.ExecuteSqlRaw("ALTER TABLE Users ADD COLUMN BestWinStreak INTEGER DEFAULT 0;"); } catch { }
+    try
+    {
+        var conn = db.Database.GetDbConnection();
+        if (conn.State != System.Data.ConnectionState.Open)
+        {
+            conn.Open();
+        }
+
+        var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        using (var cmd = conn.CreateCommand())
+        {
+            cmd.CommandText = "PRAGMA table_info(Users);";
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                // In SQLite PRAGMA table_info, column name is at index 1 ('name')
+                existingColumns.Add(reader.GetString(1));
+            }
+        }
+
+        void AddColumnIfNotExists(string name, string typeDef)
+        {
+            if (!existingColumns.Contains(name))
+            {
+                using var alterCmd = conn.CreateCommand();
+                alterCmd.CommandText = $"ALTER TABLE Users ADD COLUMN {name} {typeDef};";
+                alterCmd.ExecuteNonQuery();
+            }
+        }
+
+        AddColumnIfNotExists("Avatar", "TEXT DEFAULT 'king'");
+        AddColumnIfNotExists("Country", "TEXT DEFAULT 'VN'");
+        AddColumnIfNotExists("Bio", "TEXT DEFAULT 'Đam mê cờ Caro!'");
+        AddColumnIfNotExists("PeakElo", "INTEGER DEFAULT 1000");
+        AddColumnIfNotExists("WinStreak", "INTEGER DEFAULT 0");
+        AddColumnIfNotExists("BestWinStreak", "INTEGER DEFAULT 0");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Lỗi kiểm tra cấu trúc bảng SQLite Users");
+    }
 }
 
 app.UseCors();

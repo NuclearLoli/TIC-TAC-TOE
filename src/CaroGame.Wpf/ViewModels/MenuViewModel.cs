@@ -117,6 +117,8 @@ public partial class MenuViewModel : ViewModelBase
         OnPropertyChanged(nameof(UserEloText));
         OnPropertyChanged(nameof(UserStatsText));
         OnPropertyChanged(nameof(UserInitial));
+        OnPropertyChanged(nameof(UserAvatarIcon));
+        OnPropertyChanged(nameof(UserFlag));
     }
 
     [RelayCommand]
