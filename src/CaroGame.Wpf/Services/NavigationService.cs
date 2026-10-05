@@ -22,14 +22,27 @@ public class NavigationService : INavigationService
         _mainViewModel = mainViewModel;
     }
 
+    private bool EnsureAuthenticated()
+    {
+        var net = _serviceProvider.GetRequiredService<INetworkService>();
+        if (net.CurrentUser == null)
+        {
+            NavigateToAuth(returnToMenu: false);
+            return false;
+        }
+        return true;
+    }
+
     public void NavigateToMenu()
     {
+        if (!EnsureAuthenticated()) return;
         var vm = _serviceProvider.GetRequiredService<MenuViewModel>();
         _mainViewModel?.SetView(vm);
     }
 
     public void NavigateToGamePlay()
     {
+        if (!EnsureAuthenticated()) return;
         var vm = new GamePlayViewModel(
             this,
             _serviceProvider.GetRequiredService<ISoundService>(),
@@ -43,18 +56,21 @@ public class NavigationService : INavigationService
 
     public void NavigateToSettings()
     {
+        if (!EnsureAuthenticated()) return;
         var vm = _serviceProvider.GetRequiredService<SettingsViewModel>();
         _mainViewModel?.SetView(vm);
     }
 
     public void NavigateToHistory()
     {
+        if (!EnsureAuthenticated()) return;
         var vm = _serviceProvider.GetRequiredService<HistoryViewModel>();
         _mainViewModel?.SetView(vm);
     }
 
     public void NavigateToReplay(int gameId)
     {
+        if (!EnsureAuthenticated()) return;
         var vm = new ReplayViewModel(
             gameId,
             this,
@@ -66,6 +82,7 @@ public class NavigationService : INavigationService
 
     public void NavigateToOnlineLobby()
     {
+        if (!EnsureAuthenticated()) return;
         var vm = _serviceProvider.GetRequiredService<OnlineLobbyViewModel>();
         _mainViewModel?.SetView(vm);
     }
@@ -73,25 +90,29 @@ public class NavigationService : INavigationService
     public void NavigateToAuth(bool returnToMenu = false, bool isRegister = false)
     {
         var vm = _serviceProvider.GetRequiredService<AuthViewModel>();
-        vm.ReturnToMenu = returnToMenu;
+        var net = _serviceProvider.GetRequiredService<INetworkService>();
+        vm.ReturnToMenu = returnToMenu && net.CurrentUser != null;
         vm.IsLoginMode = !isRegister;
         _mainViewModel?.SetView(vm);
     }
 
     public void NavigateToLeaderboard()
     {
+        if (!EnsureAuthenticated()) return;
         var vm = _serviceProvider.GetRequiredService<LeaderboardViewModel>();
         _mainViewModel?.SetView(vm);
     }
 
     public void NavigateToProfile(Guid? targetUserId = null)
     {
+        if (!EnsureAuthenticated()) return;
         var vm = new ProfileViewModel(this, _serviceProvider.GetRequiredService<INetworkService>(), targetUserId);
         _mainViewModel?.SetView(vm);
     }
 
     public void NavigateToFriends()
     {
+        if (!EnsureAuthenticated()) return;
         var vm = _serviceProvider.GetRequiredService<FriendsViewModel>();
         _mainViewModel?.SetView(vm);
     }

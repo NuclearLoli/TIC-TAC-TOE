@@ -43,7 +43,7 @@ public partial class App : Application
             }
             else
             {
-                nav.NavigateToAuth(returnToMenu: true);
+                nav.NavigateToAuth(returnToMenu: false);
             }
 
             var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();

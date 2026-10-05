@@ -59,7 +59,10 @@ public partial class AuthViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(BackButtonText))]
+    [NotifyPropertyChangedFor(nameof(CanCancelAuth))]
     private bool _returnToMenu;
+
+    public bool CanCancelAuth => ReturnToMenu && _networkService.CurrentUser != null;
 
     public string Title
     {
@@ -100,6 +103,40 @@ public partial class AuthViewModel : ViewModelBase
     public void SwitchMode()
     {
         IsLoginMode = !IsLoginMode;
+        IsForgotPasswordMode = false;
+        IsOtpStep = false;
+        ErrorMessage = string.Empty;
+        SuccessMessage = string.Empty;
+        OtpCode = string.Empty;
+
+        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(SwitchModeText));
+        OnPropertyChanged(nameof(SubmitButtonText));
+        OnPropertyChanged(nameof(UsernameLabel));
+    }
+
+    [RelayCommand]
+    public void SetLoginMode()
+    {
+        if (IsLoginMode && !IsForgotPasswordMode) return;
+        IsLoginMode = true;
+        IsForgotPasswordMode = false;
+        IsOtpStep = false;
+        ErrorMessage = string.Empty;
+        SuccessMessage = string.Empty;
+        OtpCode = string.Empty;
+
+        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(SwitchModeText));
+        OnPropertyChanged(nameof(SubmitButtonText));
+        OnPropertyChanged(nameof(UsernameLabel));
+    }
+
+    [RelayCommand]
+    public void SetRegisterMode()
+    {
+        if (!IsLoginMode && !IsForgotPasswordMode) return;
+        IsLoginMode = false;
         IsForgotPasswordMode = false;
         IsOtpStep = false;
         ErrorMessage = string.Empty;
@@ -477,24 +514,15 @@ public partial class AuthViewModel : ViewModelBase
 
     private void NavigateAfterSuccess()
     {
-        if (ReturnToMenu)
-            _navigationService.NavigateToMenu();
-        else
-            _navigationService.NavigateToOnlineLobby();
+        _navigationService.NavigateToMenu();
     }
 
     [RelayCommand]
     public void Back()
     {
-        if (ReturnToMenu)
+        if (CanCancelAuth)
+        {
             _navigationService.NavigateToMenu();
-        else
-            _navigationService.NavigateToOnlineLobby();
-    }
-
-    [RelayCommand]
-    public void ContinueAsGuest()
-    {
-        _navigationService.NavigateToMenu();
+        }
     }
 }

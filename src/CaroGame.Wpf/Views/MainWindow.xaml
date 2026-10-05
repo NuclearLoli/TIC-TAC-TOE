@@ -75,10 +75,11 @@
 
                 <!-- Window Control Buttons (Minimize, Maximize, Close) & User Identity -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                    <!-- Global User Account / Profile pill -->
+                    <!-- Global User Account / Profile pill (Only visible when logged in) -->
                     <Button Command="{Binding OpenProfileOrAuthCommand}" Margin="0,0,14,0" Padding="8,3"
                             Background="#2B2926" BorderBrush="#3F3C38" BorderThickness="1" Cursor="Hand"
-                            ToolTip="Hồ sơ cá nhân / Tùy biến tài khoản">
+                            ToolTip="Hồ sơ cá nhân / Tùy biến tài khoản"
+                            Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <controls:AvatarControl Avatar="{Binding CurrentUser.Avatar}"
                                                     AvatarIcon="{Binding UserAvatarIcon}"

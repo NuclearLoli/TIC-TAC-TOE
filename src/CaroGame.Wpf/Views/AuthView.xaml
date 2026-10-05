@@ -6,367 +6,457 @@
              xmlns:conv="clr-namespace:CaroGame.Wpf.Converters"
              xmlns:vm="clr-namespace:CaroGame.Wpf.ViewModels"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance vm:AuthViewModel}">
+             d:DataContext="{d:DesignInstance vm:AuthViewModel}"
+             d:DesignHeight="760" d:DesignWidth="1100">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <conv:BoolToVisibilityConverter x:Key="InvertedBoolToVis" Invert="True" />
     </UserControl.Resources>
 
-    <Grid Background="#262421">
-        <!-- Subtle ambient radial highlight behind center card -->
-        <Border HorizontalAlignment="Center" VerticalAlignment="Center" Width="600" Height="600"
-                Opacity="0.12" IsHitTestVisible="False">
+    <Grid Background="#1E1D1A">
+        <!-- Ambient Glowing Background Accents -->
+        <Border HorizontalAlignment="Left" VerticalAlignment="Top" Width="500" Height="500"
+                Margin="-100,-100,0,0" Opacity="0.08" IsHitTestVisible="False">
             <Border.Background>
                 <RadialGradientBrush>
                     <GradientStop Color="#81B64C" Offset="0.0"/>
-                    <GradientStop Color="#262421" Offset="0.85"/>
+                    <GradientStop Color="#1E1D1A" Offset="0.8"/>
                 </RadialGradientBrush>
             </Border.Background>
         </Border>
 
-        <!-- Top Back Navigation -->
+        <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="550" Height="550"
+                Margin="0,0,-120,-120" Opacity="0.08" IsHitTestVisible="False">
+            <Border.Background>
+                <RadialGradientBrush>
+                    <GradientStop Color="#38BDF8" Offset="0.0"/>
+                    <GradientStop Color="#1E1D1A" Offset="0.8"/>
+                </RadialGradientBrush>
+            </Border.Background>
+        </Border>
+
+        <!-- Top Back Navigation (Only visible when user is already authenticated and switching account) -->
         <Button Content="{Binding BackButtonText}" Command="{Binding BackCommand}"
                 HorizontalAlignment="Left" VerticalAlignment="Top"
-                Margin="32,24,0,0" Padding="14,8"
-                Background="#302E2B" BorderBrush="#423E39" BorderThickness="1"
-                Foreground="#C3C1BE" ToolTip="Quay lại" />
+                Margin="32,20,0,0" Padding="14,8"
+                Background="#2B2926" BorderBrush="#3F3C38" BorderThickness="1"
+                Foreground="#C3C1BE" ToolTip="Quay lại" Panel.ZIndex="10"
+                Visibility="{Binding CanCancelAuth, Converter={StaticResource BoolToVis}}" />
 
-        <!-- Card Container -->
-        <Border Width="470" HorizontalAlignment="Center" VerticalAlignment="Center"
-                Background="#302E2B" CornerRadius="18" Padding="36,30"
-                BorderBrush="#423E39" BorderThickness="1.5">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="40" ShadowDepth="10" Direction="270"
-                                  Color="#000000" Opacity="0.55" />
-            </Border.Effect>
+        <!-- Main Portal Container with Vertical Scroll -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid MaxWidth="1020" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="28,32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.15*" />
+                    <ColumnDefinition Width="36" />
+                    <ColumnDefinition Width="*" MinWidth="380" MaxWidth="460" />
+                </Grid.ColumnDefinitions>
 
-            <StackPanel>
-                <!-- Brand Header -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
-                    <Border Background="#3F2727" CornerRadius="8" Width="38" Height="38" Margin="0,0,10,0">
-                        <TextBlock Text="✕" FontSize="20" FontWeight="Black" Foreground="#EF4444"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <Border Background="#1E334D" CornerRadius="8" Width="38" Height="38" Margin="0,0,14,0">
-                        <TextBlock Text="◯" FontSize="20" FontWeight="Black" Foreground="#38BDF8"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <TextBlock Text="CỜ CARO ONLINE" FontSize="22" FontWeight="Black"
-                               Foreground="#FFFFFF" VerticalAlignment="Center" />
-                </StackPanel>
-
-                <!-- Sub-Title -->
-                <TextBlock Text="{Binding Title}"
-                           FontSize="14" FontWeight="Bold" Foreground="#81B64C"
-                           HorizontalAlignment="Center" Margin="0,0,0,18" />
-
-                <!-- Success Banner (Green) -->
-                <Border CornerRadius="8" Padding="12,8" Margin="0,0,0,14"
-                        Background="#1E3326" BorderBrush="#2D5A3E" BorderThickness="1"
-                        Visibility="{Binding SuccessMessage.Length, Converter={StaticResource BoolToVis}}">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="✅ " FontSize="12" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding SuccessMessage}" FontSize="12"
-                                   Foreground="#4ADE80" FontWeight="SemiBold"
-                                   TextWrapping="Wrap" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Error Banner (Red) -->
-                <Border CornerRadius="8" Padding="12,8" Margin="0,0,0,14"
-                        Background="#3D2424" BorderBrush="#613232" BorderThickness="1"
-                        Visibility="{Binding ErrorMessage.Length, Converter={StaticResource BoolToVis}}">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="⚠️ " FontSize="12" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding ErrorMessage}" FontSize="12"
-                                   Foreground="#FFA3A3" FontWeight="SemiBold"
-                                   TextWrapping="Wrap" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Border>
-
-                <!-- ==================== FLOW 1: FORGOT PASSWORD ==================== -->
-                <StackPanel Visibility="{Binding IsForgotPasswordMode, Converter={StaticResource BoolToVis}}">
-                    <!-- Step 1: Input Email -->
-                    <StackPanel Visibility="{Binding IsOtpStep, Converter={StaticResource InvertedBoolToVis}}">
-                        <TextBlock Text="Nhập địa chỉ Email đã đăng ký để nhận mã OTP khôi phục mật khẩu:"
-                                   FontSize="12" Foreground="#9E9C99" TextWrapping="Wrap" Margin="0,0,0,12" />
-
-                        <TextBlock Text="ĐỊA CHỈ EMAIL" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
-                        <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,18" />
-
-                        <Button Content="GỬI MÃ KHÔI PHỤC ✉️" Command="{Binding SendForgotPasswordOtpCommand}"
-                                Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,11" Margin="0,0,0,12" />
-
-                        <Button Content="← Quay lại Đăng Nhập" Command="{Binding BackToLoginCommand}"
-                                Background="Transparent" BorderThickness="0" Foreground="#9E9C99"
-                                FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand" />
+                <!-- ==================== LEFT COLUMN: GAME SHOWCASE & BRANDING ==================== -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0">
+                    <!-- Brand Badge & Title -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                        <Border Background="#3F2727" CornerRadius="10" Width="44" Height="44" Margin="0,0,10,0">
+                            <TextBlock Text="✕" FontSize="24" FontWeight="Black" Foreground="#EF4444"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <Border Background="#1E334D" CornerRadius="10" Width="44" Height="44" Margin="0,0,16,0">
+                            <TextBlock Text="◯" FontSize="24" FontWeight="Black" Foreground="#38BDF8"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="CỜ CARO ARENA" FontSize="26" FontWeight="Black" Foreground="#FFFFFF" />
+                            <TextBlock Text="Nền tảng cờ Caro trí tuệ &amp; trực tuyến hàng đầu"
+                                       FontSize="12" Foreground="#81B64C" FontWeight="Bold" Margin="0,2,0,0" />
+                        </StackPanel>
                     </StackPanel>
 
-                    <!-- Step 2: Input OTP + New Password -->
-                    <StackPanel Visibility="{Binding IsOtpStep, Converter={StaticResource BoolToVis}}">
-                        <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
-                                CornerRadius="8" Padding="12,8" Margin="0,0,0,14">
-                            <TextBlock Text="{Binding Email, StringFormat='Mã OTP 6 số đã gửi tới: {0}'}"
-                                       FontSize="12" Foreground="#81B64C" FontWeight="Bold" HorizontalAlignment="Center" />
+                    <!-- Headline Pitch -->
+                    <TextBlock Text="Đấu trí đỉnh cao, thăng hạng vinh quang"
+                               FontSize="19" FontWeight="ExtraBold" Foreground="#E2DFD8" Margin="0,0,0,18" />
+
+                    <!-- Feature Highlights Grid -->
+                    <StackPanel Margin="0,0,0,20">
+                        <!-- Feature 1: Ranked Elo -->
+                        <Border Background="#262421" BorderBrush="#36332E" BorderThickness="1" CornerRadius="12"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="🏆" FontSize="22" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Hệ Thống Xếp Hạng &amp; Điểm Rank Elo" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" />
+                                    <TextBlock Text="Thi đấu tính điểm Elo chuẩn quốc tế, cạnh tranh vị trí trên Bảng Vàng Cao Thủ."
+                                               FontSize="11.5" Foreground="#9E9C99" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
                         </Border>
 
-                        <TextBlock Text="MÃ OTP XÁC THỰC (6 SỐ)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
-                        <TextBox Text="{Binding OtpCode, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="18" FontWeight="Bold" Height="44" HorizontalContentAlignment="Center"
-                                 VerticalContentAlignment="Center" Margin="0,0,0,14" MaxLength="6" />
+                        <!-- Feature 2: Online Real-time PvP -->
+                        <Border Background="#262421" BorderBrush="#36332E" BorderThickness="1" CornerRadius="12"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="⚡" FontSize="22" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Đấu Trực Tuyến Thời Gian Thực" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" />
+                                    <TextBlock Text="Tạo phòng nhanh chóng, chia sẻ mã phòng với bạn bè, đồng hồ đếm ngược và chat trực tiếp."
+                                               FontSize="11.5" Foreground="#9E9C99" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
 
-                        <TextBlock Text="MẬT KHẨU MỚI (TỐI THIỂU 6 KÝ TỰ)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
-                        <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,18" />
+                        <!-- Feature 3: Smart AI -->
+                        <Border Background="#262421" BorderBrush="#36332E" BorderThickness="1" CornerRadius="12"
+                                Padding="14,12" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="🤖" FontSize="22" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Trí Tuệ Nhân Tạo Minimax AI" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" />
+                                    <TextBlock Text="Luyện tập kỹ năng chiến thuật với 3 cấp độ AI Dễ - Trung Bình - Khó không giới hạn."
+                                               FontSize="11.5" Foreground="#9E9C99" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
 
-                        <Button Content="ĐẶT LẠI MẬT KHẨU &amp; ĐĂNG NHẬP" Command="{Binding ConfirmResetPasswordCommand}"
-                                Style="{StaticResource PrimaryButton}" FontSize="13.5" Padding="0,11" Margin="0,0,0,12" />
-
-                        <Button Content="← Quay lại Đăng Nhập" Command="{Binding BackToLoginCommand}"
-                                Background="Transparent" BorderThickness="0" Foreground="#9E9C99"
-                                FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand" />
+                        <!-- Feature 4: Security & Cloud Data -->
+                        <Border Background="#262421" BorderBrush="#36332E" BorderThickness="1" CornerRadius="12"
+                                Padding="14,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="🛡️" FontSize="22" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Bảo Mật OTP &amp; Dữ Liệu Vĩnh Viễn" FontWeight="Bold" FontSize="13" Foreground="#FFFFFF" />
+                                    <TextBlock Text="Xác thực Email OTP chuẩn hóa, lưu trữ toàn bộ chỉ số, avatar, danh hiệu và lịch sử đấu."
+                                               FontSize="11.5" Foreground="#9E9C99" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </StackPanel>
+
+                    <!-- Notice Pill: Must Login to Play -->
+                    <Border Background="#262E20" BorderBrush="#3D5A2B" BorderThickness="1" CornerRadius="10" Padding="14,10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="🔒" FontSize="15" Margin="0,0,10,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Vui lòng đăng nhập hoặc đăng ký tài khoản để bắt đầu trải nghiệm trò chơi."
+                                       FontSize="12" Foreground="#81B64C" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
-                <!-- ==================== FLOW 2: NORMAL AUTH (LOGIN / REGISTER) ==================== -->
-                <StackPanel Visibility="{Binding IsForgotPasswordMode, Converter={StaticResource InvertedBoolToVis}}">
-                    <!-- MODE SWITCHER TABS (Đăng Nhập / Đăng Ký) - Hidden during OTP step -->
-                    <Border Background="#262421" CornerRadius="8" Padding="4" Margin="0,0,0,18"
-                            Visibility="{Binding IsOtpStep, Converter={StaticResource InvertedBoolToVis}}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                <!-- ==================== RIGHT COLUMN: DEDICATED AUTH CARD ==================== -->
+                <Border Grid.Column="2" Background="#262421" CornerRadius="18" Padding="32,28"
+                        BorderBrush="#3F3C38" BorderThickness="1.5">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="40" ShadowDepth="10" Direction="270"
+                                          Color="#000000" Opacity="0.55" />
+                    </Border.Effect>
 
-                            <Button Grid.Column="0" Content="ĐĂNG NHẬP" Command="{Binding SwitchModeCommand}"
-                                    Height="34" Margin="2,0" FontWeight="Bold" FontSize="12.5">
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="Foreground" Value="#9E9C99" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsLoginMode}" Value="True">
-                                                <Setter Property="Background" Value="#45423E" />
-                                                <Setter Property="Foreground" Value="#FFFFFF" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-
-                            <Button Grid.Column="1" Content="ĐĂNG KÝ" Command="{Binding SwitchModeCommand}"
-                                    Height="34" Margin="2,0" FontWeight="Bold" FontSize="12.5">
-                                <Button.Style>
-                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                                        <Setter Property="Background" Value="Transparent" />
-                                        <Setter Property="Foreground" Value="#9E9C99" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsLoginMode}" Value="False">
-                                                <Setter Property="Background" Value="#45423E" />
-                                                <Setter Property="Foreground" Value="#FFFFFF" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- SUB-VIEW 2A: LOGIN FORM -->
-                    <StackPanel Visibility="{Binding IsLoginMode, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="{Binding UsernameLabel}" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
-                        <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,14">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
-
-                        <Grid Margin="2,0,0,6">
-                            <TextBlock Text="MẬT KHẨU" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" VerticalAlignment="Center" />
-                            <Button Content="Quên mật khẩu?" Command="{Binding OpenForgotPasswordCommand}"
-                                    HorizontalAlignment="Right" Background="Transparent" BorderThickness="0"
-                                    Foreground="#81B64C" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" />
-                        </Grid>
-                        <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="14" Height="42" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,18">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
-
-                        <Button Content="ĐĂNG NHẬP" Command="{Binding SubmitCommand}"
-                                Style="{StaticResource PrimaryButton}" FontSize="14.5" Padding="0,11" Margin="0,0,0,12" />
-
-                        <Grid Margin="0,2,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Separator Grid.Column="0" Background="#3F3C38" VerticalAlignment="Center" Margin="0,0,12,0" />
-                            <TextBlock Grid.Column="1" Text="HOẶC" FontSize="11" FontWeight="Bold" Foreground="#75736F" />
-                            <Separator Grid.Column="2" Background="#3F3C38" VerticalAlignment="Center" Margin="12,0,0,0" />
-                        </Grid>
-
-                        <Button Content="⚡ Tiếp tục chơi với tư cách Khách" Command="{Binding ContinueAsGuestCommand}"
-                                Background="#3C3935" BorderBrush="#4D4A45" BorderThickness="1"
-                                Foreground="#FFFFFF" FontWeight="Bold" FontSize="13" Padding="0,10" Cursor="Hand" />
-                    </StackPanel>
-
-                    <!-- SUB-VIEW 2B: REGISTER STEP 1 (INPUT INFO & SEND OTP) -->
                     <StackPanel>
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding IsLoginMode}" Value="False" />
-                                            <Condition Binding="{Binding IsOtpStep}" Value="False" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
+                        <!-- Card Header Title -->
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="18" FontWeight="Black" Foreground="#FFFFFF"
+                                   HorizontalAlignment="Center" Margin="0,0,0,14" />
 
-                        <TextBlock Text="ĐỊA CHỈ EMAIL (NHẬN MÃ XÁC THỰC OTP)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
-                        <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="14" Height="40" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,12">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
-
-                        <TextBlock Text="TÊN TÀI KHOẢN (USERNAME)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
-                        <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="14" Height="40" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,12">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
-
-                        <TextBlock Text="TÊN HIỂN THỊ (TRONG GAME)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
-                        <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="14" Height="40" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,12">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
-
-                        <TextBlock Text="MẬT KHẨU" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
-                        <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="14" Height="40" VerticalContentAlignment="Center"
-                                 Padding="12,0" Margin="0,0,0,16">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
-
-                        <!-- Primary: OTP Email Verification -->
-                        <Button Content="TIẾP TỤC &amp; GỬI MÃ OTP ✉️" Command="{Binding SubmitCommand}"
-                                Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,11" Margin="0,0,0,12" />
-
-                        <Grid Margin="0,2,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Separator Grid.Column="0" Background="#3F3C38" VerticalAlignment="Center" Margin="0,0,12,0" />
-                            <TextBlock Grid.Column="1" Text="HOẶC" FontSize="11" FontWeight="Bold" Foreground="#75736F" />
-                            <Separator Grid.Column="2" Background="#3F3C38" VerticalAlignment="Center" Margin="12,0,0,0" />
-                        </Grid>
-
-                        <Button Content="⚡ Tiếp tục chơi với tư cách Khách" Command="{Binding ContinueAsGuestCommand}"
-                                Background="#3C3935" BorderBrush="#4D4A45" BorderThickness="1"
-                                Foreground="#FFFFFF" FontWeight="Bold" FontSize="13" Padding="0,10" Cursor="Hand" />
-                    </StackPanel>
-
-                    <!-- SUB-VIEW 2C: REGISTER STEP 2 (CONFIRM OTP) -->
-                    <StackPanel>
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Collapsed" />
-                                <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding IsLoginMode}" Value="False" />
-                                            <Condition Binding="{Binding IsOtpStep}" Value="True" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility" Value="Visible" />
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-
-                        <!-- Email Badge Box -->
-                        <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
-                                CornerRadius="10" Padding="14,10" Margin="0,0,0,18">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="✉️ Đã gửi mã xác thực 6 số đến:" FontSize="11.5" Foreground="#9E9C99" HorizontalAlignment="Center" />
-                                <TextBlock Text="{Binding Email}" FontSize="14" FontWeight="Black" Foreground="#81B64C" HorizontalAlignment="Center" Margin="0,3,0,0" />
+                        <!-- Success Banner (Green) -->
+                        <Border CornerRadius="8" Padding="12,9" Margin="0,0,0,14"
+                                Background="#1E3326" BorderBrush="#2D5A3E" BorderThickness="1"
+                                Visibility="{Binding SuccessMessage.Length, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="✅ " FontSize="12" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding SuccessMessage}" FontSize="12"
+                                           Foreground="#4ADE80" FontWeight="SemiBold"
+                                           TextWrapping="Wrap" VerticalAlignment="Center" />
                             </StackPanel>
                         </Border>
 
-                        <TextBlock Text="NHẬP MÃ XÁC THỰC OTP (6 CHỮ SỐ)" FontSize="11" FontWeight="Bold"
-                                   Foreground="#9E9C99" HorizontalAlignment="Center" Margin="0,0,0,8" />
+                        <!-- Error Banner (Red) -->
+                        <Border CornerRadius="8" Padding="12,9" Margin="0,0,0,14"
+                                Background="#3D2424" BorderBrush="#613232" BorderThickness="1"
+                                Visibility="{Binding ErrorMessage.Length, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBlock Text="⚠️ " FontSize="12" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ErrorMessage}" FontSize="12"
+                                           Foreground="#FFA3A3" FontWeight="SemiBold"
+                                           TextWrapping="Wrap" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
 
-                        <TextBox Text="{Binding OtpCode, UpdateSourceTrigger=PropertyChanged}"
-                                 FontSize="24" FontWeight="Black" Height="48" HorizontalContentAlignment="Center"
-                                 VerticalContentAlignment="Center" MaxLength="6" Margin="0,0,0,18"
-                                 Background="#21201D" BorderBrush="#81B64C" BorderThickness="1.5" Foreground="#81B64C">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
-                            </TextBox.InputBindings>
-                        </TextBox>
+                        <!-- ==================== FLOW 1: FORGOT PASSWORD ==================== -->
+                        <StackPanel Visibility="{Binding IsForgotPasswordMode, Converter={StaticResource BoolToVis}}">
+                            <!-- Step 1: Input Email -->
+                            <StackPanel Visibility="{Binding IsOtpStep, Converter={StaticResource InvertedBoolToVis}}">
+                                <TextBlock Text="Nhập địa chỉ Email đã đăng ký để nhận mã OTP khôi phục mật khẩu:"
+                                           FontSize="12" Foreground="#9E9C99" TextWrapping="Wrap" Margin="0,0,0,12" />
 
-                        <Button Content="XÁC NHẬN &amp; TẠO TÀI KHOẢN" Command="{Binding SubmitCommand}"
-                                Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,12" Margin="0,0,0,16" />
+                                <TextBlock Text="ĐỊA CHỈ EMAIL" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14" Height="42" VerticalContentAlignment="Center"
+                                         Padding="12,0" Margin="0,0,0,18" />
 
-                        <!-- Row Actions: Back / Resend -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                                <Button Content="GỬI MÃ KHÔI PHỤC ✉️" Command="{Binding SendForgotPasswordOtpCommand}"
+                                        Style="{StaticResource PrimaryButton}" FontSize="14" Padding="0,11" Margin="0,0,0,12" />
 
-                            <Button Grid.Column="0" Content="← Sửa thông tin" Command="{Binding BackFromOtpCommand}"
-                                    Background="Transparent" BorderThickness="0" Foreground="#9E9C99"
-                                    FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Left" Cursor="Hand" />
+                                <Button Content="← Quay lại Đăng Nhập" Command="{Binding BackToLoginCommand}"
+                                        Background="Transparent" BorderThickness="0" Foreground="#9E9C99"
+                                        FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand" />
+                            </StackPanel>
 
-                            <Button Grid.Column="1" Command="{Binding ResendOtpCommand}" IsEnabled="{Binding CanResendOtp}"
-                                    Background="Transparent" BorderThickness="0" Foreground="#81B64C"
-                                    FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" Cursor="Hand">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Content" Value="Gửi lại mã OTP" />
+                            <!-- Step 2: Input OTP + New Password -->
+                            <StackPanel Visibility="{Binding IsOtpStep, Converter={StaticResource BoolToVis}}">
+                                <Border Background="#1E1D1A" BorderBrush="#3F3C38" BorderThickness="1"
+                                        CornerRadius="8" Padding="12,8" Margin="0,0,0,14">
+                                    <TextBlock Text="{Binding Email, StringFormat='Mã OTP 6 số đã gửi tới: {0}'}"
+                                               FontSize="12" Foreground="#81B64C" FontWeight="Bold" HorizontalAlignment="Center" />
+                                </Border>
+
+                                <TextBlock Text="MÃ OTP XÁC THỰC (6 SỐ)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <TextBox Text="{Binding OtpCode, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="18" FontWeight="Bold" Height="44" HorizontalContentAlignment="Center"
+                                         VerticalContentAlignment="Center" Margin="0,0,0,14" MaxLength="6" />
+
+                                <TextBlock Text="MẬT KHẨU MỚI (TỐI THIỂU 6 KÝ TỰ)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14" Height="42" VerticalContentAlignment="Center"
+                                         Padding="12,0" Margin="0,0,0,18" />
+
+                                <Button Content="ĐẶT LẠI MẬT KHẨU &amp; ĐĂNG NHẬP" Command="{Binding ConfirmResetPasswordCommand}"
+                                        Style="{StaticResource PrimaryButton}" FontSize="13.5" Padding="0,11" Margin="0,0,0,12" />
+
+                                <Button Content="← Quay lại Đăng Nhập" Command="{Binding BackToLoginCommand}"
+                                        Background="Transparent" BorderThickness="0" Foreground="#9E9C99"
+                                        FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" Cursor="Hand" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- ==================== FLOW 2: NORMAL AUTH (LOGIN / REGISTER) ==================== -->
+                        <StackPanel Visibility="{Binding IsForgotPasswordMode, Converter={StaticResource InvertedBoolToVis}}">
+                            <!-- MODE SWITCHER TABS (Đăng Nhập / Đăng Ký) - Hidden during OTP step -->
+                            <Border Background="#1E1D1A" CornerRadius="8" Padding="4" Margin="0,0,0,18"
+                                    Visibility="{Binding IsOtpStep, Converter={StaticResource InvertedBoolToVis}}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Content="ĐĂNG NHẬP" Command="{Binding SetLoginModeCommand}"
+                                            Height="36" Margin="2,0" FontWeight="Bold" FontSize="12.5">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="Foreground" Value="#9E9C99" />
+                                                <Setter Property="BorderThickness" Value="0" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsLoginMode}" Value="True">
+                                                        <Setter Property="Background" Value="#3A3835" />
+                                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+
+                                    <Button Grid.Column="1" Content="ĐĂNG KÝ" Command="{Binding SetRegisterModeCommand}"
+                                            Height="36" Margin="2,0" FontWeight="Bold" FontSize="12.5">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="Foreground" Value="#9E9C99" />
+                                                <Setter Property="BorderThickness" Value="0" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsLoginMode}" Value="False">
+                                                        <Setter Property="Background" Value="#3A3835" />
+                                                        <Setter Property="Foreground" Value="#FFFFFF" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <!-- SUB-VIEW 2A: LOGIN FORM -->
+                            <StackPanel Visibility="{Binding IsLoginMode, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{Binding UsernameLabel}" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14" Height="42" VerticalContentAlignment="Center"
+                                         Padding="12,0" Margin="0,0,0,14">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+
+                                <Grid Margin="2,0,0,6">
+                                    <TextBlock Text="MẬT KHẨU" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" VerticalAlignment="Center" />
+                                    <Button Content="Quên mật khẩu?" Command="{Binding OpenForgotPasswordCommand}"
+                                            HorizontalAlignment="Right" Background="Transparent" BorderThickness="0"
+                                            Foreground="#81B64C" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand" />
+                                </Grid>
+                                <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14" Height="42" VerticalContentAlignment="Center"
+                                         Padding="12,0" Margin="0,0,0,20">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+
+                                <Button Content="ĐĂNG NHẬP VÀO GAME ➔" Command="{Binding SubmitCommand}"
+                                        Style="{StaticResource PrimaryButton}" FontSize="14" FontWeight="Black"
+                                        Padding="0,12" Margin="0,0,0,16" />
+
+                                <TextBlock Text="Chưa có tài khoản? Nhấn tab ĐĂNG KÝ ở trên để tạo tài khoản mới miễn phí."
+                                           FontSize="11.5" Foreground="#75736F" TextWrapping="Wrap" TextAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- SUB-VIEW 2B: REGISTER STEP 1 (INPUT INFO & SEND OTP) -->
+                            <StackPanel>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding CanResendOtp}" Value="False">
-                                                <Setter Property="Content" Value="{Binding ResendSecondsLeft, StringFormat='Gửi lại ({0}s)'}" />
-                                                <Setter Property="Foreground" Value="#75736F" />
-                                            </DataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsLoginMode}" Value="False" />
+                                                    <Condition Binding="{Binding IsOtpStep}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </MultiDataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </Button.Style>
-                            </Button>
-                        </Grid>
+                                </StackPanel.Style>
+
+                                <TextBlock Text="ĐỊA CHỈ EMAIL (NHẬN MÃ OTP)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14" Height="40" VerticalContentAlignment="Center"
+                                         Padding="12,0" Margin="0,0,0,10">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+
+                                <TextBlock Text="TÊN TÀI KHOẢN (USERNAME)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14" Height="40" VerticalContentAlignment="Center"
+                                         Padding="12,0" Margin="0,0,0,10">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+
+                                <TextBlock Text="TÊN HIỂN THỊ (TRONG GAME)" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14" Height="40" VerticalContentAlignment="Center"
+                                         Padding="12,0" Margin="0,0,0,10">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+
+                                <TextBlock Text="MẬT KHẨU" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="2,0,0,6" />
+                                <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14" Height="40" VerticalContentAlignment="Center"
+                                         Padding="12,0" Margin="0,0,0,16">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+
+                                <Button Content="GỬI MÃ XÁC THỰC OTP ✉️" Command="{Binding SubmitCommand}"
+                                        Style="{StaticResource PrimaryButton}" FontSize="13.5" FontWeight="Bold"
+                                        Padding="0,11" Margin="0,0,0,12" />
+
+                                <TextBlock Text="Mã OTP 6 số sẽ được gửi tới Email của bạn để kích hoạt tài khoản."
+                                           FontSize="11.5" Foreground="#75736F" TextWrapping="Wrap" TextAlignment="Center" />
+                            </StackPanel>
+
+                            <!-- SUB-VIEW 2C: REGISTER STEP 2 (CONFIRM OTP) -->
+                            <StackPanel>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsLoginMode}" Value="False" />
+                                                    <Condition Binding="{Binding IsOtpStep}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+
+                                <!-- Email Badge Box -->
+                                <Border Background="#1E1D1A" BorderBrush="#3F3C38" BorderThickness="1"
+                                        CornerRadius="10" Padding="14,10" Margin="0,0,0,16">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="✉️ Đã gửi mã xác thực 6 số đến:" FontSize="11.5" Foreground="#9E9C99" HorizontalAlignment="Center" />
+                                        <TextBlock Text="{Binding Email}" FontSize="13.5" FontWeight="Black" Foreground="#81B64C" HorizontalAlignment="Center" Margin="0,3,0,0" />
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="NHẬP MÃ XÁC THỰC OTP (6 CHỮ SỐ)" FontSize="11" FontWeight="Bold"
+                                           Foreground="#9E9C99" HorizontalAlignment="Center" Margin="0,0,0,8" />
+
+                                <TextBox Text="{Binding OtpCode, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="22" FontWeight="Black" Height="48" HorizontalContentAlignment="Center"
+                                         VerticalContentAlignment="Center" MaxLength="6" Margin="0,0,0,18"
+                                         Background="#1A1916" BorderBrush="#81B64C" BorderThickness="1.5" Foreground="#81B64C">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding SubmitCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+
+                                <Button Content="XÁC NHẬN &amp; TẠO TÀI KHOẢN" Command="{Binding SubmitCommand}"
+                                        Style="{StaticResource PrimaryButton}" FontSize="14" FontWeight="Black"
+                                        Padding="0,12" Margin="0,0,0,16" />
+
+                                <!-- Row Actions: Back / Resend -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Content="← Sửa thông tin" Command="{Binding BackFromOtpCommand}"
+                                            Background="Transparent" BorderThickness="0" Foreground="#9E9C99"
+                                            FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Left" Cursor="Hand" />
+
+                                    <Button Grid.Column="1" Command="{Binding ResendOtpCommand}" IsEnabled="{Binding CanResendOtp}"
+                                            Background="Transparent" BorderThickness="0" Foreground="#81B64C"
+                                            FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" Cursor="Hand">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Content" Value="Gửi lại mã OTP" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding CanResendOtp}" Value="False">
+                                                        <Setter Property="Content" Value="{Binding ResendSecondsLeft, StringFormat='Gửi lại ({0}s)'}" />
+                                                        <Setter Property="Foreground" Value="#75736F" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </StackPanel>
-        </Border>
+                </Border>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>

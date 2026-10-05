@@ -37,11 +37,11 @@
                 <!-- Nhóm nút điều hướng bên trái -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="◀ Menu" Command="{Binding BackToMenuCommand}"
-                            Margin="0,0,8,0" Padding="12,6" ToolTip="Trở về màn hình chính" />
+                            Margin="0,0,6,0" Padding="10,5" FontSize="12" ToolTip="Trở về màn hình chính" />
 
                     <!-- Offline: Ván mới -->
                     <Button Content="🔄 Ván Mới" Command="{Binding StartNewGameCommand}"
-                            Margin="0,0,10,0" Padding="12,6" ToolTip="Làm mới lại toàn bộ bàn cờ">
+                            Margin="0,0,8,0" Padding="10,5" FontSize="12" ToolTip="Làm mới lại toàn bộ bàn cờ">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
                                 <Style.Triggers>
@@ -55,7 +55,7 @@
 
                     <!-- Online: Đầu hàng khi đang chơi -->
                     <Button Content="🏳️ Đầu Hàng" Command="{Binding SurrenderCommand}"
-                            Margin="0,0,8,0" ToolTip="Chấp nhận xử thua ván đấu hiện tại">
+                            Margin="0,0,6,0" Padding="10,5" FontSize="12" ToolTip="Chấp nhận xử thua ván đấu hiện tại">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource DangerButton}">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -74,7 +74,7 @@
 
                     <!-- Online: Yêu cầu đấu lại khi ván kết thúc -->
                     <Button Content="🔄 Yêu Cầu Đấu Lại" Command="{Binding StartNewGameCommand}"
-                            Margin="0,0,8,0" ToolTip="Gửi lời mời tái đấu tới đối thủ">
+                            Margin="0,0,6,0" Padding="10,5" FontSize="12" ToolTip="Gửi lời mời tái đấu tới đối thủ">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -95,8 +95,8 @@
                     </Button>
 
                     <!-- Online: Chấp nhận đấu lại -->
-                    <Button Content="✅ Chấp Nhận Đấu Lại" Command="{Binding AcceptRematchCommand}"
-                            Margin="0,0,8,0" ToolTip="Bắt đầu ván đấu lại ngay">
+                    <Button Content="✅ Đấu Lại" Command="{Binding AcceptRematchCommand}"
+                            Margin="0,0,6,0" Padding="10,5" FontSize="12" ToolTip="Bắt đầu ván đấu lại ngay">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource AccentBlueButton}">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -115,7 +115,7 @@
 
                     <!-- Undo / Redo (Offline) -->
                     <Button Content="↩ Undo" Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}"
-                            Margin="0,0,6,0" Padding="10,6" ToolTip="Rút lại nước vừa đánh">
+                            Margin="0,0,5,0" Padding="8,5" FontSize="11.5" ToolTip="Rút lại nước vừa đánh">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                 <Style.Triggers>
@@ -128,7 +128,7 @@
                     </Button>
 
                     <Button Content="↪ Redo" Command="{Binding RedoCommand}" IsEnabled="{Binding CanRedo}"
-                            Padding="10,6" ToolTip="Đánh lại nước vừa rút">
+                            Padding="8,5" FontSize="11.5" ToolTip="Đánh lại nước vừa rút">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                 <Style.Triggers>
@@ -146,29 +146,31 @@
                     <!-- Thông tin đối đầu Online (Tên, Rank Elo, Phe cờ) -->
                     <Border Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVisibility}}"
                             Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
-                            CornerRadius="10" Padding="12,3" Margin="0,0,0,4" HorizontalAlignment="Center">
+                            CornerRadius="10" Padding="10,3" Margin="0,0,0,4" HorizontalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <controls:AvatarControl Avatar="{Binding MyAvatar}" Size="22" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding MyDisplayName}" FontWeight="Bold" FontSize="12.5" Foreground="#FFFFFF" />
-                            <TextBlock Text="{Binding MyElo, StringFormat=' ({0} Elo)'}" FontWeight="SemiBold" FontSize="11" Foreground="#F59E0B" />
-                            <Border Background="#1E334D" CornerRadius="4" Padding="5,1" Margin="6,0,8,0">
-                                <TextBlock Text="{Binding MyOnlineRole}" FontWeight="Black" FontSize="11" Foreground="#38BDF8" />
+                            <controls:AvatarControl Avatar="{Binding MyAvatar}" Size="20" FontSize="10" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding MyDisplayName}" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF"
+                                       MaxWidth="90" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding MyElo, StringFormat=' ({0})'}" FontWeight="SemiBold" FontSize="11" Foreground="#F59E0B" VerticalAlignment="Center" />
+                            <Border Background="#1E334D" CornerRadius="4" Padding="4,1" Margin="5,0,6,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding MyOnlineRole}" FontWeight="Black" FontSize="10.5" Foreground="#38BDF8" />
                             </Border>
 
-                            <TextBlock Text="⚔️" FontSize="11" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="⚔️" FontSize="10" Margin="0,0,6,0" VerticalAlignment="Center" />
 
-                            <controls:AvatarControl Avatar="{Binding OpponentAvatar}" Size="22" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding OpponentDisplayName}" FontWeight="Bold" FontSize="12.5" Foreground="#FFFFFF" />
-                            <TextBlock Text="{Binding OpponentElo, StringFormat=' ({0} Elo)'}" FontWeight="SemiBold" FontSize="11" Foreground="#F59E0B" />
-                            <Border Background="#3F2727" CornerRadius="4" Padding="5,1" Margin="6,0,0,0">
-                                <TextBlock Text="{Binding OpponentOnlineRole}" FontWeight="Black" FontSize="11" Foreground="#EF4444" />
+                            <controls:AvatarControl Avatar="{Binding OpponentAvatar}" Size="20" FontSize="10" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding OpponentDisplayName}" FontWeight="Bold" FontSize="12" Foreground="#FFFFFF"
+                                       MaxWidth="90" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding OpponentElo, StringFormat=' ({0})'}" FontWeight="SemiBold" FontSize="11" Foreground="#F59E0B" VerticalAlignment="Center" />
+                            <Border Background="#3F2727" CornerRadius="4" Padding="4,1" Margin="5,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding OpponentOnlineRole}" FontWeight="Black" FontSize="10.5" Foreground="#EF4444" />
                             </Border>
                         </StackPanel>
                     </Border>
 
                     <Border Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1"
-                            CornerRadius="14" Padding="18,5" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding StatusMessage}" FontSize="14.5" FontWeight="Bold"
+                            CornerRadius="12" Padding="14,4" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="13.5" FontWeight="Bold"
                                    Foreground="#FFFFFF" HorizontalAlignment="Center" />
                     </Border>
                 </StackPanel>
@@ -176,43 +178,43 @@
                 <!-- Nút Chat, Bộ đếm thời gian & Số nước đi bên phải -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Nút Chat thời gian thực (Online mode) -->
-                    <Button Command="{Binding ToggleChatCommand}" Margin="0,0,10,0" Padding="10,6" ToolTip="Trò chuyện với đối thủ"
+                    <Button Command="{Binding ToggleChatCommand}" Margin="0,0,8,0" Padding="8,5" ToolTip="Trò chuyện với đối thủ"
                             Visibility="{Binding IsOnlineMode, Converter={StaticResource BoolToVisibility}}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="💬 Chat" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" />
-                            <Border Background="#EF4444" CornerRadius="8" Padding="6,1" Margin="6,0,0,0"
+                            <TextBlock Text="💬 Chat" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            <Border Background="#EF4444" CornerRadius="8" Padding="5,1" Margin="5,0,0,0"
                                     Visibility="{Binding UnreadChatCount, Converter={StaticResource BoolToVisibility}}">
-                                <TextBlock Text="{Binding UnreadChatCount}" FontSize="10.5" FontWeight="Bold" Foreground="#FFFFFF" />
+                                <TextBlock Text="{Binding UnreadChatCount}" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" />
                             </Border>
                         </StackPanel>
                     </Button>
 
                     <!-- Số nước đi -->
                     <Border Background="#262421" BorderBrush="#3F3C38" BorderThickness="1"
-                            CornerRadius="8" Padding="10,5" Margin="0,0,8,0" ToolTip="Tổng số nước đi">
+                            CornerRadius="8" Padding="8,4" Margin="0,0,6,0" ToolTip="Tổng số nước đi">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="🎯 " FontSize="12" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding MoveCount}" FontSize="13.5" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" />
+                            <TextBlock Text="🎯 " FontSize="11" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding MoveCount}" FontSize="12.5" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" />
                         </StackPanel>
                     </Border>
 
                     <!-- Bộ đếm thời gian TỔNG TRẬN ĐẤU -->
                     <Border Background="#1A2733" BorderBrush="#26415C" BorderThickness="1"
-                            CornerRadius="8" Padding="10,5" Margin="0,0,8,0" ToolTip="Thời gian tổng trận đấu">
+                            CornerRadius="8" Padding="8,4" Margin="0,0,6,0" ToolTip="Thời gian tổng trận đấu">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="⏱ " FontSize="12" Foreground="#38BDF8" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding FormattedTotalTime}" FontSize="13.5" FontWeight="Black"
+                            <TextBlock Text="⏱ " FontSize="11" Foreground="#38BDF8" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding FormattedTotalTime}" FontSize="12.5" FontWeight="Black"
                                        Foreground="#38BDF8" VerticalAlignment="Center" />
                         </StackPanel>
                     </Border>
 
                     <!-- Đồng hồ đếm ngược từng lượt -->
                     <Border Background="#3D2424" BorderBrush="#5C3636" BorderThickness="1"
-                            CornerRadius="8" Padding="10,5" ToolTip="Thời gian còn lại của lượt này"
+                            CornerRadius="8" Padding="8,4" ToolTip="Thời gian còn lại của lượt này"
                             Visibility="{Binding IsTurnTimerEnabled, Converter={StaticResource BoolToVisibility}}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="⏳ " FontSize="12" Foreground="#EF4444" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding RemainingSeconds, StringFormat='{}{0}s'}" FontSize="13.5"
+                            <TextBlock Text="⏳ " FontSize="11" Foreground="#EF4444" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding RemainingSeconds, StringFormat='{}{0}s'}" FontSize="12.5"
                                        FontWeight="Black" Foreground="#EF4444" VerticalAlignment="Center" />
                         </StackPanel>
                     </Border>
