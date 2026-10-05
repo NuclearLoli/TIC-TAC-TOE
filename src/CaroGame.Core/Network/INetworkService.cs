@@ -29,6 +29,7 @@ public interface INetworkService
 
     Task ConnectAsync();
     Task DisconnectAsync();
+    Task<CheckAvailabilityResponseDto> CheckAvailabilityAsync(string identifier);
     Task<AuthResponseDto> SendOtpAsync(string email, string purpose = "Register");
     Task<AuthResponseDto> VerifyOtpAsync(string email, string code, string purpose = "Register");
     Task<AuthResponseDto> ResetPasswordAsync(string email, string otpCode, string newPassword);

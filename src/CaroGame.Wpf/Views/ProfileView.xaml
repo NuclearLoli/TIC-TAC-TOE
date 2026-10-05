@@ -68,12 +68,12 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Big Avatar with Rank Ring -->
+                        <!-- Big Avatar with Dynamic Frame Ring -->
                         <controls:AvatarControl Grid.Column="0"
                                                 Avatar="{Binding Profile.Avatar}"
                                                 AvatarIcon="{Binding Profile.AvatarIcon}"
-                                                Size="84" FontSize="42"
-                                                BorderBrush="#81B64C" BorderThickness="3"
+                                                Size="86" FontSize="44"
+                                                BorderBrush="{Binding Profile.AvatarFrameBorderBrush}" BorderThickness="3.5"
                                                 Margin="0,0,22,0" VerticalAlignment="Center" />
 
                         <!-- User Info -->
@@ -81,15 +81,44 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,4">
                                 <TextBlock Text="{Binding Profile.CountryFlag}" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding Profile.DisplayName}" FontSize="22" FontWeight="Black"
-                                           Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                           Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                
+                                <!-- Player Title Badge -->
+                                <Border Background="#1C2E3D" BorderBrush="#38BDF8" BorderThickness="1"
+                                        CornerRadius="6" Padding="8,2" VerticalAlignment="Center" Margin="0,0,6,0">
+                                    <TextBlock Text="{Binding Profile.Title, StringFormat='⚔️ {0}'}" FontWeight="Bold" FontSize="11" Foreground="#38BDF8" />
+                                </Border>
+
+                                <!-- Rank Tier -->
                                 <Border Background="#3B3220" BorderBrush="#78591E" BorderThickness="1"
-                                        CornerRadius="6" Padding="8,2" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Profile.RankTier}" FontWeight="Bold" FontSize="11.5" Foreground="#F59E0B" />
+                                        CornerRadius="6" Padding="8,2" VerticalAlignment="Center" Margin="0,0,6,0">
+                                    <TextBlock Text="{Binding Profile.RankTier}" FontWeight="Bold" FontSize="11" Foreground="#F59E0B" />
+                                </Border>
+
+                                <!-- Email Verified Badge -->
+                                <Border Background="#1E3326" BorderBrush="#2D5A3E" BorderThickness="1"
+                                        CornerRadius="6" Padding="6,2" VerticalAlignment="Center">
+                                    <TextBlock Text="✓ Verified" FontWeight="SemiBold" FontSize="10" Foreground="#4ADE80" />
                                 </Border>
                             </StackPanel>
 
                             <TextBlock Text="{Binding Profile.Username, StringFormat='@{0}'}"
-                                       FontSize="13" Foreground="#9E9C99" Margin="0,0,0,8" />
+                                       FontSize="13" Foreground="#9E9C99" Margin="0,0,0,6" />
+
+                            <!-- Level & XP Progress Bar -->
+                            <StackPanel Margin="0,0,0,8" MaxWidth="340" HorizontalAlignment="Left">
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="{Binding Profile.Level, StringFormat='⚡ CẤP ĐỘ {0}'}" FontSize="11.5" FontWeight="Black" Foreground="#81B64C" HorizontalAlignment="Left" />
+                                    <TextBlock FontSize="10.5" FontWeight="SemiBold" Foreground="#9E9C99" HorizontalAlignment="Right">
+                                        <Run Text="{Binding Profile.CurrentLevelXp, Mode=OneWay}" />
+                                        <Run Text=" / " />
+                                        <Run Text="{Binding Profile.NextLevelXp, Mode=OneWay}" />
+                                        <Run Text=" XP" />
+                                    </TextBlock>
+                                </Grid>
+                                <ProgressBar Value="{Binding Profile.XpProgressPercentage, Mode=OneWay}" Maximum="100" Height="6"
+                                             Background="#21201D" Foreground="#81B64C" BorderThickness="0" />
+                            </StackPanel>
 
                             <Border Background="#262421" CornerRadius="8" Padding="10,6" Margin="0,0,0,4" HorizontalAlignment="Left">
                                 <TextBlock Text="{Binding Profile.Bio}" FontSize="12.5" Foreground="#D6D3CD" FontStyle="Italic" TextWrapping="Wrap" />
@@ -183,6 +212,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="14" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="14" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <!-- Card 1: Elo Rating -->
@@ -234,6 +265,32 @@
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Profile.WinStreak, StringFormat='{}🔥 Hiện tại: {0}'}" FontWeight="Bold" FontSize="13" Foreground="#F97316" Margin="0,0,14,0" />
                                     <TextBlock Text="{Binding Profile.BestWinStreak, StringFormat='{}🏆 Kỷ lục: {0}'}" FontWeight="Bold" FontSize="13" Foreground="#FACC15" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Card 5: Lowest Elo -->
+                        <Border Grid.Row="4" Grid.Column="0" Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1"
+                                CornerRadius="12" Padding="20,16">
+                            <StackPanel>
+                                <TextBlock Text="ELO THẤP NHẤT" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,6,0" />
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="📉 " FontSize="18" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Profile.LowestElo}" FontSize="24" FontWeight="Black" Foreground="#C3C1BE" Margin="0,0,10,0" />
+                                    <TextBlock Text="điểm" FontSize="12" Foreground="#787570" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Card 6: Play Time -->
+                        <Border Grid.Row="4" Grid.Column="2" Background="#302E2B" BorderBrush="#3F3C38" BorderThickness="1"
+                                CornerRadius="12" Padding="20,16">
+                            <StackPanel>
+                                <TextBlock Text="TỔNG THỜI GIAN THI ĐẤU" FontSize="11" FontWeight="Bold" Foreground="#9E9C99" Margin="0,0,6,0" />
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="⏱️ " FontSize="18" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Profile.FormattedPlayTime}" FontSize="24" FontWeight="Black" Foreground="#38BDF8" Margin="0,0,10,0" />
+                                    <TextBlock Text="thi đấu thực tế" FontSize="12" Foreground="#787570" VerticalAlignment="Center" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -382,6 +439,40 @@
                                              Command="{Binding SelectCountryCommand}" CommandParameter="DE" />
                                 <RadioButton Content="🌐 Quốc tế" Style="{StaticResource SegmentButton}" GroupName="CountryGroup" Margin="3"
                                              Command="{Binding SelectCountryCommand}" CommandParameter="INT" />
+                            </WrapPanel>
+
+                            <!-- Avatar Frame Selector -->
+                            <TextBlock Text="KHUNG VIỀN AVATAR (AVATAR FRAME)" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,10" />
+                            <WrapPanel Margin="0,0,0,16">
+                                <RadioButton Content="🌿 Mặc định (Classic)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
+                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="classic" />
+                                <RadioButton Content="🥉 Đồng (Bronze)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
+                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="bronze" />
+                                <RadioButton Content="🥈 Bạc (Silver)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
+                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="silver" />
+                                <RadioButton Content="👑 Hoàng Kim (Gold)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
+                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="gold" />
+                                <RadioButton Content="💎 Kim Cương (Diamond)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
+                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="diamond" />
+                                <RadioButton Content="🔥 Thách Đấu (Challenger)" Style="{StaticResource SegmentButton}" GroupName="FrameGroup" Margin="3"
+                                             Command="{Binding SelectAvatarFrameCommand}" CommandParameter="challenger" />
+                            </WrapPanel>
+
+                            <!-- Player Title Selector -->
+                            <TextBlock Text="DANH HIỆU KỲ THỦ (TITLE)" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,10" />
+                            <WrapPanel Margin="0,0,0,20">
+                                <RadioButton Content="🌱 Tân Thủ" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             Command="{Binding SelectTitleCommand}" CommandParameter="Tân Thủ" />
+                                <RadioButton Content="⚔️ Kỳ Thủ" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             Command="{Binding SelectTitleCommand}" CommandParameter="Kỳ Thủ" />
+                                <RadioButton Content="⚡ Chiến Thần" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             Command="{Binding SelectTitleCommand}" CommandParameter="Chiến Thần" />
+                                <RadioButton Content="🎯 Bậc Thầy Caro" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             Command="{Binding SelectTitleCommand}" CommandParameter="Bậc Thầy Caro" />
+                                <RadioButton Content="👑 Đại Kiện Tướng" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             Command="{Binding SelectTitleCommand}" CommandParameter="Đại Kiện Tướng" />
+                                <RadioButton Content="🏆 Bất Khả Chiến Bại" Style="{StaticResource SegmentButton}" GroupName="TitleGroup" Margin="3"
+                                             Command="{Binding SelectTitleCommand}" CommandParameter="Bất Khả Chiến Bại" />
                             </WrapPanel>
 
                             <!-- DisplayName Input -->

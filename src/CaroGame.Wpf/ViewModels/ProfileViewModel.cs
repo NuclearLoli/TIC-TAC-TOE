@@ -40,6 +40,12 @@ public partial class ProfileViewModel : ViewModelBase
     [ObservableProperty]
     private string _editBio = string.Empty;
 
+    [ObservableProperty]
+    private string _editTitle = "Tân Thủ";
+
+    [ObservableProperty]
+    private string _editAvatarFrame = "classic";
+
     // Security fields
     [ObservableProperty]
     private string _oldPassword = string.Empty;
@@ -90,6 +96,8 @@ public partial class ProfileViewModel : ViewModelBase
             EditAvatar = p.Avatar;
             EditCountry = p.Country;
             EditBio = p.Bio;
+            EditTitle = p.Title;
+            EditAvatarFrame = p.AvatarFrame;
         }
         else if (myUser != null && IsMyProfile)
         {
@@ -98,6 +106,8 @@ public partial class ProfileViewModel : ViewModelBase
             EditAvatar = myUser.Avatar;
             EditCountry = myUser.Country;
             EditBio = myUser.Bio;
+            EditTitle = myUser.Title;
+            EditAvatarFrame = myUser.AvatarFrame;
         }
 
         IsBusy = false;
@@ -148,6 +158,18 @@ public partial class ProfileViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    public void SelectAvatarFrame(string frame)
+    {
+        EditAvatarFrame = frame;
+    }
+
+    [RelayCommand]
+    public void SelectTitle(string title)
+    {
+        EditTitle = title;
+    }
+
+    [RelayCommand]
     public void SelectCountry(string countryCode)
     {
         EditCountry = countryCode;
@@ -171,7 +193,9 @@ public partial class ProfileViewModel : ViewModelBase
             DisplayName = EditDisplayName.Trim(),
             Avatar = EditAvatar,
             Country = EditCountry,
-            Bio = EditBio?.Trim() ?? string.Empty
+            Bio = EditBio?.Trim() ?? string.Empty,
+            Title = EditTitle,
+            AvatarFrame = EditAvatarFrame
         });
 
         IsBusy = false;

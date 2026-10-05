@@ -178,7 +178,23 @@ public partial class AuthViewModel : ViewModelBase
                 }
                 else
                 {
-                    ErrorMessage = result.Message;
+                    // Check if identifier exists for detailed, friendly feedback
+                    try
+                    {
+                        var check = await _networkService.CheckAvailabilityAsync(Username.Trim());
+                        if (!check.Exists)
+                        {
+                            ErrorMessage = "Tài khoản hoặc Email chưa được đăng ký trong hệ thống. Vui lòng chuyển sang tab Đăng ký!";
+                        }
+                        else
+                        {
+                            ErrorMessage = "Sai mật khẩu! Vui lòng kiểm tra lại mật khẩu hoặc chọn Quên mật khẩu.";
+                        }
+                    }
+                    catch
+                    {
+                        ErrorMessage = result.Message;
+                    }
                 }
             }
             catch (Exception ex)
@@ -192,13 +208,19 @@ public partial class AuthViewModel : ViewModelBase
             return;
         }
 
-        // Register flow
+        // Register flow (Strict OTP email verification inspired by Chess.com)
         if (!IsOtpStep)
         {
-            // Step 1: Validate input and send OTP email
+            // Step 1: Validate input
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
             {
                 ErrorMessage = "Vui lòng nhập đầy đủ tên tài khoản và mật khẩu.";
+                return;
+            }
+
+            if (Username.Trim().Length < 3)
+            {
+                ErrorMessage = "Tên tài khoản phải từ 3 ký tự trở lên.";
                 return;
             }
 
@@ -217,6 +239,34 @@ public partial class AuthViewModel : ViewModelBase
             IsLoading = true;
             try
             {
+                // Pre-flight check: Verify if email or username is already registered (Chess.com flow)
+                var emailCheck = await _networkService.CheckAvailabilityAsync(Email.Trim());
+                var userCheck = await _networkService.CheckAvailabilityAsync(Username.Trim());
+
+                if (emailCheck.Exists || userCheck.Exists)
+                {
+                    // Account already exists! Verify password against the existing account
+                    string identifierToTest = emailCheck.Exists ? Email.Trim() : Username.Trim();
+                    var testLogin = await _networkService.LoginAsync(identifierToTest, Password);
+
+                    if (testLogin.Success)
+                    {
+                        _soundService.Play(Core.Enums.SoundEffectType.GameWon);
+                        SuccessMessage = "Tài khoản đã tồn tại! Mật khẩu chính xác, đang đăng nhập vào game...";
+                        await Task.Delay(400);
+                        NavigateAfterSuccess();
+                        return;
+                    }
+                    else
+                    {
+                        ErrorMessage = emailCheck.Exists
+                            ? "Địa chỉ Email này đã được đăng ký nhưng sai mật khẩu! Vui lòng kiểm tra lại mật khẩu hoặc chọn 'Quên mật khẩu'."
+                            : $"Tên tài khoản '{Username.Trim()}' đã được đăng ký nhưng sai mật khẩu! Vui lòng thử mật khẩu khác hoặc chọn 'Quên mật khẩu'.";
+                        return;
+                    }
+                }
+
+                // If account does not exist, send OTP verification email
                 var otpResult = await _networkService.SendOtpAsync(Email.Trim(), "Register");
                 if (otpResult.Success)
                 {
@@ -280,59 +330,6 @@ public partial class AuthViewModel : ViewModelBase
             {
                 IsLoading = false;
             }
-        }
-    }
-
-    [RelayCommand]
-    public async Task QuickRegister()
-    {
-        ErrorMessage = string.Empty;
-        SuccessMessage = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
-        {
-            ErrorMessage = "Vui lòng nhập đầy đủ tên tài khoản và mật khẩu.";
-            return;
-        }
-
-        if (Username.Trim().Length < 3)
-        {
-            ErrorMessage = "Tên tài khoản phải từ 3 ký tự trở lên.";
-            return;
-        }
-
-        if (Password.Length < 6)
-        {
-            ErrorMessage = "Mật khẩu phải từ 6 ký tự trở lên.";
-            return;
-        }
-
-        string emailToUse = string.IsNullOrWhiteSpace(Email)
-            ? $"{Username.Trim().ToLower()}@carogame.local"
-            : Email.Trim();
-
-        IsLoading = true;
-        try
-        {
-            string dispName = string.IsNullOrWhiteSpace(DisplayName) ? Username.Trim() : DisplayName.Trim();
-            var result = await _networkService.RegisterAsync(Username.Trim(), emailToUse, Password, dispName, "");
-            if (result.Success)
-            {
-                _soundService.Play(Core.Enums.SoundEffectType.GameWon);
-                NavigateAfterSuccess();
-            }
-            else
-            {
-                ErrorMessage = result.Message;
-            }
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = $"Lỗi đăng ký tài khoản: {ex.Message}";
-        }
-        finally
-        {
-            IsLoading = false;
         }
     }
 

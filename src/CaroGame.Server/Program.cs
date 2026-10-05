@@ -134,9 +134,20 @@ using (var scope = app.Services.CreateScope())
         AddColumnIfNotExists("Losses", "INTEGER DEFAULT 0");
         AddColumnIfNotExists("Draws", "INTEGER DEFAULT 0");
         AddColumnIfNotExists("PeakElo", "INTEGER DEFAULT 1000");
+        AddColumnIfNotExists("LowestElo", "INTEGER DEFAULT 1000");
         AddColumnIfNotExists("WinStreak", "INTEGER DEFAULT 0");
         AddColumnIfNotExists("BestWinStreak", "INTEGER DEFAULT 0");
         AddColumnIfNotExists("LastLoginAt", "TEXT DEFAULT '2025-01-01T00:00:00'");
+        AddColumnIfNotExists("Role", "TEXT DEFAULT 'Player'");
+        AddColumnIfNotExists("Status", "TEXT DEFAULT 'Active'");
+        AddColumnIfNotExists("IsEmailVerified", "INTEGER DEFAULT 1");
+        AddColumnIfNotExists("Level", "INTEGER DEFAULT 1");
+        AddColumnIfNotExists("ExperiencePoints", "INTEGER DEFAULT 0");
+        AddColumnIfNotExists("Title", "TEXT DEFAULT 'Tân Thủ'");
+        AddColumnIfNotExists("AvatarFrame", "TEXT DEFAULT 'classic'");
+        AddColumnIfNotExists("TotalPlayTimeSeconds", "INTEGER DEFAULT 0");
+        AddColumnIfNotExists("LastLoginIp", "TEXT");
+        AddColumnIfNotExists("PasswordChangedAt", "TEXT");
 
         // Fill default email if missing
         using (var updEmail = conn.CreateCommand())
@@ -152,7 +163,7 @@ using (var scope = app.Services.CreateScope())
             seedCmd.CommandText = @"
                 UPDATE Users SET Id = UPPER(Id);
                 UPDATE Users SET Email = 'testarossa@carogame.local', PasswordHash = @hash WHERE LOWER(Username) = 'testarossa';
-                UPDATE Users SET PasswordHash = @hash, Email = 'mailrac0212@gmail.com' WHERE LOWER(Username) = 'mailrac0212';
+                UPDATE Users SET PasswordHash = @hash, Email = 'mailrac0212@gmail.com', Role = 'VIP', Title = 'Kiện Tướng', AvatarFrame = 'gold', Level = 5, ExperiencePoints = 420 WHERE LOWER(Username) = 'mailrac0212';
             ";
             var pHash = seedCmd.CreateParameter();
             pHash.ParameterName = "@hash";
@@ -170,8 +181,14 @@ using (var scope = app.Services.CreateScope())
                 Email = "mailrac0212@gmail.com",
                 DisplayName = "Kỳ Thủ Caro",
                 PasswordHash = PasswordHasher.HashPassword("Caro@0212"),
+                Role = "VIP",
+                Title = "Kiện Tướng",
+                AvatarFrame = "gold",
+                Level = 5,
+                ExperiencePoints = 420,
                 EloRating = 1200,
                 PeakElo = 1200,
+                LowestElo = 950,
                 Avatar = "king",
                 Country = "VN",
                 Bio = "Đam mê cờ Caro!",
@@ -180,6 +197,7 @@ using (var scope = app.Services.CreateScope())
                 Draws = 0,
                 WinStreak = 3,
                 BestWinStreak = 4,
+                TotalPlayTimeSeconds = 3600,
                 CreatedAt = DateTime.UtcNow,
                 LastLoginAt = DateTime.UtcNow
             };
@@ -202,6 +220,51 @@ app.UseCors();
 
 app.MapGet("/", () => "Caro Game SignalR Server is running!");
 app.MapGet("/health", () => Results.Ok(new { status = "online", timestamp = DateTime.UtcNow }));
+
+// Check Account Availability (Inspired by Chess.com)
+app.MapPost("/api/auth/check-availability", async (CheckAvailabilityRequestDto req, ServerDbContext db) =>
+{
+    string identifier = req.Identifier?.Trim() ?? string.Empty;
+    if (string.IsNullOrWhiteSpace(identifier))
+    {
+        return Results.BadRequest(new CheckAvailabilityResponseDto
+        {
+            Exists = false,
+            Available = false,
+            Message = "Vui lòng nhập tên người dùng hoặc địa chỉ Email."
+        });
+    }
+
+    bool isEmail = identifier.Contains('@') && identifier.Contains('.');
+    string lowerId = identifier.ToLowerInvariant();
+
+    var existingUser = await db.Users.AsNoTracking().FirstOrDefaultAsync(u =>
+        u.Username.ToLower() == lowerId || u.Email.ToLower() == lowerId);
+
+    if (existingUser != null)
+    {
+        bool matchedByEmail = existingUser.Email.Equals(lowerId, StringComparison.OrdinalIgnoreCase);
+        return Results.Ok(new CheckAvailabilityResponseDto
+        {
+            Exists = true,
+            Available = false,
+            IsEmail = matchedByEmail || isEmail,
+            Message = matchedByEmail
+                ? "Địa chỉ Email này đã được đăng ký tài khoản."
+                : $"Tên tài khoản '{existingUser.Username}' đã được sử dụng."
+        });
+    }
+
+    return Results.Ok(new CheckAvailabilityResponseDto
+    {
+        Exists = false,
+        Available = true,
+        IsEmail = isEmail,
+        Message = isEmail
+            ? "Email hợp lệ và sẵn sàng đăng ký!"
+            : $"Tên tài khoản '{identifier}' khả dụng!"
+    });
+});
 
 // OTP Endpoints
 app.MapPost("/api/auth/send-otp", async (SendOtpRequestDto req, ServerDbContext db, IEmailService emailService) =>
@@ -502,6 +565,16 @@ app.MapPost("/api/profile/update", async (UpdateProfileRequestDto req, HttpConte
         user.Bio = req.Bio.Length > 200 ? req.Bio[..200] : req.Bio;
     }
 
+    if (!string.IsNullOrWhiteSpace(req.Title))
+    {
+        user.Title = req.Title.Trim();
+    }
+
+    if (!string.IsNullOrWhiteSpace(req.AvatarFrame))
+    {
+        user.AvatarFrame = req.AvatarFrame.Trim().ToLowerInvariant();
+    }
+
     await db.SaveChangesAsync();
 
     return Results.Ok(new AuthResponseDto
@@ -721,16 +794,25 @@ static UserProfileDto MapProfile(User user) => new()
     Username = user.Username,
     Email = user.Email,
     DisplayName = user.DisplayName,
+    Role = user.Role,
+    Status = user.Status,
+    IsEmailVerified = user.IsEmailVerified,
+    Level = user.Level,
+    ExperiencePoints = user.ExperiencePoints,
+    Title = user.Title,
+    AvatarFrame = user.AvatarFrame,
     Avatar = user.Avatar,
     Country = user.Country,
     Bio = user.Bio,
     EloRating = user.EloRating,
     PeakElo = user.PeakElo,
+    LowestElo = user.LowestElo,
     Wins = user.Wins,
     Losses = user.Losses,
     Draws = user.Draws,
     WinStreak = user.WinStreak,
     BestWinStreak = user.BestWinStreak,
+    TotalPlayTimeSeconds = user.TotalPlayTimeSeconds,
     CreatedAt = user.CreatedAt
 };
 

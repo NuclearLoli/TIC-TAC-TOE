@@ -39,26 +39,74 @@ public class LoginRequestDto
     public string Password { get; set; } = string.Empty;
 }
 
+public class CheckAvailabilityRequestDto
+{
+    public string Identifier { get; set; } = string.Empty;
+}
+
+public class CheckAvailabilityResponseDto
+{
+    public bool Exists { get; set; }
+    public bool IsEmail { get; set; }
+    public bool Available { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public string? SuggestedUsername { get; set; }
+}
+
 public class UserProfileDto
 {
     public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
+    public string Role { get; set; } = "Player"; // "Player", "VIP", "Admin"
+    public string Status { get; set; } = "Active";
+    public bool IsEmailVerified { get; set; } = true;
+    public int Level { get; set; } = 1;
+    public int ExperiencePoints { get; set; } = 0;
+    public string Title { get; set; } = "Tân Thủ";
+    public string AvatarFrame { get; set; } = "classic"; // "classic", "bronze", "silver", "gold", "diamond", "challenger"
     public string Avatar { get; set; } = "king";
     public string Country { get; set; } = "VN";
     public string Bio { get; set; } = "Đam mê cờ Caro!";
     public int EloRating { get; set; } = 1000;
     public int PeakElo { get; set; } = 1000;
+    public int LowestElo { get; set; } = 1000;
     public int Wins { get; set; }
     public int Losses { get; set; }
     public int Draws { get; set; }
     public int WinStreak { get; set; }
     public int BestWinStreak { get; set; }
+    public long TotalPlayTimeSeconds { get; set; } = 0;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public int TotalMatches => Wins + Losses + Draws;
     public double WinRate => TotalMatches > 0 ? Math.Round((double)Wins / TotalMatches * 100, 1) : 0;
+
+    public int CurrentLevelXp => ExperiencePoints % 100;
+    public int NextLevelXp => 100;
+    public double XpProgressPercentage => Math.Min(100.0, Math.Max(0.0, (CurrentLevelXp / 100.0) * 100.0));
+
+    public string FormattedPlayTime
+    {
+        get
+        {
+            var ts = TimeSpan.FromSeconds(TotalPlayTimeSeconds);
+            if (ts.TotalHours >= 1)
+                return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+            return $"{ts.Minutes}m {ts.Seconds}s";
+        }
+    }
+
+    public string AvatarFrameBorderBrush => AvatarFrame switch
+    {
+        "bronze" => "#CD7F32",
+        "silver" => "#C0C0C0",
+        "gold" => "#FFD700",
+        "diamond" => "#00E5FF",
+        "challenger" => "#FF4655",
+        _ => "#81B64C" // classic
+    };
 
     public string RankTier => EloRating switch
     {
@@ -104,6 +152,8 @@ public class UpdateProfileRequestDto
     public string Avatar { get; set; } = "king";
     public string Country { get; set; } = "VN";
     public string Bio { get; set; } = string.Empty;
+    public string? Title { get; set; }
+    public string? AvatarFrame { get; set; }
 }
 
 public class ChangePasswordRequestDto

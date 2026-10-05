@@ -203,6 +203,25 @@ public class SignalRNetworkService : INetworkService
         }
     }
 
+    public async Task<CheckAvailabilityResponseDto> CheckAvailabilityAsync(string identifier)
+    {
+        await EnsureServerRunningAsync();
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/auth/check-availability", new CheckAvailabilityRequestDto
+            {
+                Identifier = identifier
+            });
+
+            var result = await response.Content.ReadFromJsonAsync<CheckAvailabilityResponseDto>();
+            return result ?? new CheckAvailabilityResponseDto { Exists = false, Available = false, Message = "Phản hồi không hợp lệ từ máy chủ." };
+        }
+        catch (Exception ex)
+        {
+            return new CheckAvailabilityResponseDto { Exists = false, Available = false, Message = $"Lỗi kết nối máy chủ: {ex.Message}" };
+        }
+    }
+
     public async Task<AuthResponseDto> SendOtpAsync(string email, string purpose = "Register")
     {
         await EnsureServerRunningAsync();

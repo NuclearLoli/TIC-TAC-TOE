@@ -252,6 +252,8 @@ public class CaroHub : Hub
                     using var scope = _serviceProvider.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<ServerDbContext>();
 
+                    int durationSecs = Math.Max(1, (int)(DateTime.UtcNow - room.MatchStartedAt).TotalSeconds);
+
                     if (room.Host.UserId.HasValue)
                     {
                         var uHost = await db.Users.FindAsync(room.Host.UserId.Value);
@@ -259,6 +261,13 @@ public class CaroHub : Hub
                         {
                             uHost.EloRating = newEloX;
                             if (newEloX > uHost.PeakElo) uHost.PeakElo = newEloX;
+                            if (newEloX < uHost.LowestElo) uHost.LowestElo = newEloX;
+                            uHost.TotalPlayTimeSeconds += durationSecs;
+
+                            int xpGainX = winner == CellState.X ? 50 : (winner == CellState.O ? 10 : 20);
+                            uHost.ExperiencePoints += xpGainX;
+                            uHost.Level = 1 + (uHost.ExperiencePoints / 100);
+
                             if (winner == CellState.X)
                             {
                                 uHost.Wins++;
@@ -284,6 +293,13 @@ public class CaroHub : Hub
                         {
                             uGuest.EloRating = newEloO;
                             if (newEloO > uGuest.PeakElo) uGuest.PeakElo = newEloO;
+                            if (newEloO < uGuest.LowestElo) uGuest.LowestElo = newEloO;
+                            uGuest.TotalPlayTimeSeconds += durationSecs;
+
+                            int xpGainO = winner == CellState.O ? 50 : (winner == CellState.X ? 10 : 20);
+                            uGuest.ExperiencePoints += xpGainO;
+                            uGuest.Level = 1 + (uGuest.ExperiencePoints / 100);
+
                             if (winner == CellState.O)
                             {
                                 uGuest.Wins++;

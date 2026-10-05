@@ -30,6 +30,14 @@ public class ServerDbContext : DbContext
             entity.Property(u => u.Avatar).HasMaxLength(30).HasDefaultValue("king");
             entity.Property(u => u.Country).HasMaxLength(10).HasDefaultValue("VN");
             entity.Property(u => u.Bio).HasMaxLength(250).HasDefaultValue("Đam mê cờ Caro!");
+            entity.Property(u => u.Role).HasMaxLength(20).HasDefaultValue("Player");
+            entity.Property(u => u.Status).HasMaxLength(20).HasDefaultValue("Active");
+            entity.Property(u => u.Title).HasMaxLength(50).HasDefaultValue("Tân Thủ");
+            entity.Property(u => u.AvatarFrame).HasMaxLength(30).HasDefaultValue("classic");
+            entity.Property(u => u.LowestElo).HasDefaultValue(1000);
+            entity.Property(u => u.Level).HasDefaultValue(1);
+            entity.Property(u => u.ExperiencePoints).HasDefaultValue(0);
+            entity.Property(u => u.TotalPlayTimeSeconds).HasDefaultValue(0);
         });
 
         modelBuilder.Entity<OnlineMatch>(entity =>
