@@ -116,12 +116,12 @@ public class SignalRNetworkService : INetworkService
         catch
         {
             TryStartLocalServer();
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 8; i++)
             {
                 await Task.Delay(400);
                 try
                 {
-                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromMilliseconds(400));
+                    using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromMilliseconds(500));
                     var check = await _httpClient.GetAsync($"{ApiBaseUrl}/health", cts.Token);
                     if (check.IsSuccessStatusCode) return;
                 }
@@ -135,21 +135,30 @@ public class SignalRNetworkService : INetworkService
         try
         {
             string baseDir = AppContext.BaseDirectory;
-            string[] potentialPaths = new[]
+            var candidates = new List<string>
             {
                 Path.Combine(baseDir, "CaroGame.Server.exe"),
-                Path.Combine(baseDir, "..", "CaroServer", "CaroGame.Server.exe"),
                 Path.Combine(baseDir, "CaroServer", "CaroGame.Server.exe"),
-                Path.Combine(baseDir, "..", "..", "..", "publish", "CaroServer", "CaroGame.Server.exe"),
-                Path.Combine(baseDir, "..", "..", "..", "src", "CaroGame.Server", "bin", "Debug", "net9.0", "CaroGame.Server.exe"),
-                Path.Combine(baseDir, "..", "..", "..", "..", "publish", "CaroServer", "CaroGame.Server.exe")
+                Path.Combine(baseDir, "..", "CaroServer", "CaroGame.Server.exe")
             };
 
-            foreach (var p in potentialPaths)
+            var dir = new DirectoryInfo(baseDir);
+            for (int i = 0; i < 6 && dir != null; i++)
             {
-                var fullPath = Path.GetFullPath(p);
-                if (File.Exists(fullPath))
+                candidates.Add(Path.Combine(dir.FullName, "publish", "CaroServer", "CaroGame.Server.exe"));
+                candidates.Add(Path.Combine(dir.FullName, "src", "CaroGame.Server", "bin", "Debug", "net9.0", "CaroGame.Server.exe"));
+                candidates.Add(Path.Combine(dir.FullName, "src", "CaroGame.Server", "bin", "Release", "net9.0", "CaroGame.Server.exe"));
+                candidates.Add(Path.Combine(dir.FullName, "CaroGame.Server", "bin", "Debug", "net9.0", "CaroGame.Server.exe"));
+                candidates.Add(Path.Combine(dir.FullName, "CaroGame.Server", "bin", "Release", "net9.0", "CaroGame.Server.exe"));
+                candidates.Add(Path.Combine(dir.FullName, "CaroServer", "CaroGame.Server.exe"));
+                dir = dir.Parent;
+            }
+
+            foreach (var p in candidates)
+            {
+                if (File.Exists(p))
                 {
+                    var fullPath = Path.GetFullPath(p);
                     var psi = new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = fullPath,

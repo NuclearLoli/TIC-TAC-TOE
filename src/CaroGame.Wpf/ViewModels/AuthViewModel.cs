@@ -44,13 +44,25 @@ public partial class AuthViewModel : ViewModelBase
     private string _otpCode = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
     private string _errorMessage = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSuccess))]
     private string _successMessage = string.Empty;
 
+    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+    public bool HasSuccess => !string.IsNullOrWhiteSpace(SuccessMessage);
+
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsNotLoading))]
+    [NotifyPropertyChangedFor(nameof(LoginButtonText))]
+    [NotifyPropertyChangedFor(nameof(SubmitButtonText))]
+    [NotifyPropertyChangedFor(nameof(CanResendOtp))]
     private bool _isLoading;
+
+    public bool IsNotLoading => !IsLoading;
+    public string LoginButtonText => IsLoading ? "⏳ ĐANG KIỂM TRA ĐĂNG NHẬP..." : "ĐĂNG NHẬP VÀO GAME ➔";
 
     [ObservableProperty]
     private int _resendSecondsLeft = 0;
@@ -198,9 +210,21 @@ public partial class AuthViewModel : ViewModelBase
 
         if (IsLoginMode)
         {
-            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+            if (string.IsNullOrWhiteSpace(Username) && string.IsNullOrWhiteSpace(Password))
             {
                 ErrorMessage = "Vui lòng nhập tên đăng nhập (hoặc Email) và mật khẩu.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Username))
+            {
+                ErrorMessage = "Vui lòng nhập tên đăng nhập hoặc Email.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Password))
+            {
+                ErrorMessage = "Vui lòng nhập mật khẩu tài khoản.";
                 return;
             }
 
@@ -221,22 +245,24 @@ public partial class AuthViewModel : ViewModelBase
                         var check = await _networkService.CheckAvailabilityAsync(Username.Trim());
                         if (!check.Exists)
                         {
-                            ErrorMessage = "Tài khoản hoặc Email chưa được đăng ký trong hệ thống. Vui lòng chuyển sang tab Đăng ký!";
+                            ErrorMessage = $"Tài khoản hoặc Email '{Username.Trim()}' chưa được đăng ký trong hệ thống. Vui lòng kiểm tra lại hoặc chuyển sang tab ĐĂNG KÝ!";
                         }
                         else
                         {
-                            ErrorMessage = "Sai mật khẩu! Vui lòng kiểm tra lại mật khẩu hoặc chọn Quên mật khẩu.";
+                            ErrorMessage = "Mật khẩu không chính xác! Vui lòng kiểm tra lại mật khẩu hoặc chọn 'Quên mật khẩu'.";
                         }
                     }
                     catch
                     {
-                        ErrorMessage = result.Message;
+                        ErrorMessage = string.IsNullOrWhiteSpace(result.Message)
+                            ? "Đăng nhập không thành công. Vui lòng kiểm tra lại tài khoản và mật khẩu."
+                            : result.Message;
                     }
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Không thể kết nối máy chủ: {ex.Message}";
+                ErrorMessage = $"Không thể kết nối máy chủ xác thực: {ex.Message}";
             }
             finally
             {
