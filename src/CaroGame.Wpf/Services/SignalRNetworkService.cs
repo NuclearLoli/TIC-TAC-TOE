@@ -194,8 +194,8 @@ public class SignalRNetworkService : INetworkService
                 OtpCode = otpCode
             });
 
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            if (result != null && result.Success && result.User != null)
+            var result = await SafeReadAuthResponseAsync(response, "Đăng ký không thành công.");
+            if (result.Success && result.User != null)
             {
                 AuthToken = result.Token;
                 CurrentUser = result.User;
@@ -204,7 +204,7 @@ public class SignalRNetworkService : INetworkService
                 return result;
             }
 
-            return result ?? new AuthResponseDto { Success = false, Message = "Đăng ký không thành công." };
+            return result;
         }
         catch (Exception ex)
         {
@@ -222,8 +222,14 @@ public class SignalRNetworkService : INetworkService
                 Identifier = identifier
             });
 
-            var result = await response.Content.ReadFromJsonAsync<CheckAvailabilityResponseDto>();
-            return result ?? new CheckAvailabilityResponseDto { Exists = false, Available = false, Message = "Phản hồi không hợp lệ từ máy chủ." };
+            try
+            {
+                var result = await response.Content.ReadFromJsonAsync<CheckAvailabilityResponseDto>();
+                if (result != null) return result;
+            }
+            catch { }
+
+            return new CheckAvailabilityResponseDto { Exists = false, Available = false, Message = "Phản hồi không hợp lệ từ máy chủ." };
         }
         catch (Exception ex)
         {
@@ -242,8 +248,7 @@ public class SignalRNetworkService : INetworkService
                 Purpose = purpose
             });
 
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            return result ?? new AuthResponseDto { Success = false, Message = "Không thể gửi mã OTP." };
+            return await SafeReadAuthResponseAsync(response, "Không thể gửi mã OTP.");
         }
         catch (Exception ex)
         {
@@ -263,8 +268,7 @@ public class SignalRNetworkService : INetworkService
                 Purpose = purpose
             });
 
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            return result ?? new AuthResponseDto { Success = false, Message = "Xác thực OTP thất bại." };
+            return await SafeReadAuthResponseAsync(response, "Xác thực OTP thất bại.");
         }
         catch (Exception ex)
         {
@@ -284,8 +288,7 @@ public class SignalRNetworkService : INetworkService
                 NewPassword = newPassword
             });
 
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            return result ?? new AuthResponseDto { Success = false, Message = "Đặt lại mật khẩu thất bại." };
+            return await SafeReadAuthResponseAsync(response, "Đặt lại mật khẩu thất bại.");
         }
         catch (Exception ex)
         {
@@ -305,8 +308,8 @@ public class SignalRNetworkService : INetworkService
                 Password = password
             });
 
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            if (result != null && result.Success && result.User != null)
+            var result = await SafeReadAuthResponseAsync(response, "Đăng nhập không thành công.");
+            if (result.Success && result.User != null)
             {
                 AuthToken = result.Token;
                 CurrentUser = result.User;
@@ -315,7 +318,7 @@ public class SignalRNetworkService : INetworkService
                 return result;
             }
 
-            return result ?? new AuthResponseDto { Success = false, Message = "Đăng nhập không thành công." };
+            return result;
         }
         catch (Exception ex)
         {
@@ -389,14 +392,14 @@ public class SignalRNetworkService : INetworkService
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthToken);
 
             var response = await _httpClient.SendAsync(request);
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            if (result != null && result.Success && result.User != null)
+            var result = await SafeReadAuthResponseAsync(response, "Không thể cập nhật hồ sơ.");
+            if (result.Success && result.User != null)
             {
                 CurrentUser = result.User;
                 SaveLocalSession(new AuthResponseDto { Success = true, Token = AuthToken, User = CurrentUser });
                 Dispatch(() => UserProfileChanged?.Invoke(CurrentUser));
             }
-            return result ?? new AuthResponseDto { Success = false, Message = "Không thể cập nhật hồ sơ." };
+            return result;
         }
         catch (Exception ex)
         {
@@ -424,13 +427,33 @@ public class SignalRNetworkService : INetworkService
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthToken);
 
             var response = await _httpClient.SendAsync(request);
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            return result ?? new AuthResponseDto { Success = false, Message = "Không thể đổi mật khẩu." };
+            return await SafeReadAuthResponseAsync(response, "Không thể đổi mật khẩu.");
         }
         catch (Exception ex)
         {
             return new AuthResponseDto { Success = false, Message = $"Lỗi kết nối máy chủ: {ex.Message}" };
         }
+    }
+
+    private static async Task<AuthResponseDto> SafeReadAuthResponseAsync(HttpResponseMessage response, string defaultErrorMessage)
+    {
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            return new AuthResponseDto { Success = false, Message = "Phiên đăng nhập đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại." };
+        }
+
+        try
+        {
+            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+            if (result != null) return result;
+        }
+        catch { }
+
+        return new AuthResponseDto
+        {
+            Success = response.IsSuccessStatusCode,
+            Message = response.IsSuccessStatusCode ? "Thao tác thành công." : defaultErrorMessage
+        };
     }
 
     public async Task<List<FriendDto>> GetFriendsAsync()
@@ -466,8 +489,7 @@ public class SignalRNetworkService : INetworkService
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthToken);
 
             var response = await _httpClient.SendAsync(request);
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            return result ?? new AuthResponseDto { Success = false, Message = "Gửi lời mời thất bại." };
+            return await SafeReadAuthResponseAsync(response, "Gửi lời mời thất bại.");
         }
         catch (Exception ex)
         {
@@ -488,8 +510,7 @@ public class SignalRNetworkService : INetworkService
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthToken);
 
             var response = await _httpClient.SendAsync(request);
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            return result ?? new AuthResponseDto { Success = false, Message = "Xử lý thất bại." };
+            return await SafeReadAuthResponseAsync(response, "Xử lý thất bại.");
         }
         catch (Exception ex)
         {
@@ -507,8 +528,7 @@ public class SignalRNetworkService : INetworkService
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthToken);
 
             var response = await _httpClient.SendAsync(request);
-            var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            return result ?? new AuthResponseDto { Success = false, Message = "Xóa bạn bè thất bại." };
+            return await SafeReadAuthResponseAsync(response, "Xóa bạn bè thất bại.");
         }
         catch (Exception ex)
         {

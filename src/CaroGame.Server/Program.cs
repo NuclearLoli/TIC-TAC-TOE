@@ -491,19 +491,19 @@ app.MapPost("/api/auth/login", async (LoginRequestDto req, ServerDbContext db, T
     });
 });
 
-app.MapGet("/api/auth/profile", async (HttpContext http, ServerDbContext db, TokenService tokenService) =>
+app.MapGet("/api/auth/profile", async Task<IResult> (HttpContext http, ServerDbContext db, TokenService tokenService) =>
 {
     var userId = GetAuthUserId(http, tokenService);
-    if (!userId.HasValue) return Results.Unauthorized();
+    if (!userId.HasValue) return JsonUnauthorized();
 
     var user = await db.Users.FindAsync(userId.Value);
-    if (user == null) return Results.NotFound();
+    if (user == null) return JsonNotFound();
 
     return Results.Ok(MapProfile(user));
 });
 
 // Public profile lookup
-app.MapGet("/api/profile/{idOrUsername}", async (string idOrUsername, ServerDbContext db) =>
+app.MapGet("/api/profile/{idOrUsername}", async Task<IResult> (string idOrUsername, ServerDbContext db) =>
 {
     idOrUsername = idOrUsername.Trim();
     User? user = null;
@@ -516,18 +516,18 @@ app.MapGet("/api/profile/{idOrUsername}", async (string idOrUsername, ServerDbCo
         user = await db.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == idOrUsername.ToLower());
     }
 
-    if (user == null) return Results.NotFound();
+    if (user == null) return JsonNotFound();
     return Results.Ok(MapProfile(user));
 });
 
 // Update Profile Customization
-app.MapPost("/api/profile/update", async (UpdateProfileRequestDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
+app.MapPost("/api/profile/update", async Task<IResult> (UpdateProfileRequestDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
 {
     var userId = GetAuthUserId(http, tokenService);
-    if (!userId.HasValue) return Results.Unauthorized();
+    if (!userId.HasValue) return JsonUnauthorized();
 
     var user = await db.Users.FindAsync(userId.Value);
-    if (user == null) return Results.NotFound();
+    if (user == null) return JsonNotFound();
 
     if (!string.IsNullOrWhiteSpace(req.DisplayName))
     {
@@ -586,13 +586,13 @@ app.MapPost("/api/profile/update", async (UpdateProfileRequestDto req, HttpConte
 });
 
 // Change Password
-app.MapPost("/api/profile/change-password", async (ChangePasswordRequestDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
+app.MapPost("/api/profile/change-password", async Task<IResult> (ChangePasswordRequestDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
 {
     var userId = GetAuthUserId(http, tokenService);
-    if (!userId.HasValue) return Results.Unauthorized();
+    if (!userId.HasValue) return JsonUnauthorized();
 
     var user = await db.Users.FindAsync(userId.Value);
-    if (user == null) return Results.NotFound();
+    if (user == null) return JsonNotFound();
 
     if (!PasswordHasher.VerifyPassword(req.OldPassword, user.PasswordHash))
     {
@@ -611,10 +611,10 @@ app.MapPost("/api/profile/change-password", async (ChangePasswordRequestDto req,
 });
 
 // Friends Endpoints
-app.MapGet("/api/friends", async (HttpContext http, ServerDbContext db, TokenService tokenService) =>
+app.MapGet("/api/friends", async Task<IResult> (HttpContext http, ServerDbContext db, TokenService tokenService) =>
 {
     var userId = GetAuthUserId(http, tokenService);
-    if (!userId.HasValue) return Results.Unauthorized();
+    if (!userId.HasValue) return JsonUnauthorized();
 
     var uid = userId.Value;
     var friendships = await db.Friendships
@@ -659,10 +659,10 @@ app.MapGet("/api/friends", async (HttpContext http, ServerDbContext db, TokenSer
     return Results.Ok(friendList.OrderByDescending(f => f.IsOnline).ThenByDescending(f => f.EloRating));
 });
 
-app.MapPost("/api/friends/request", async (SendFriendRequestDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
+app.MapPost("/api/friends/request", async Task<IResult> (SendFriendRequestDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
 {
     var userId = GetAuthUserId(http, tokenService);
-    if (!userId.HasValue) return Results.Unauthorized();
+    if (!userId.HasValue) return JsonUnauthorized();
 
     string target = req.TargetUsername?.Trim().ToLower() ?? string.Empty;
     var targetUser = await db.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == target || u.Email.ToLower() == target);
@@ -711,10 +711,10 @@ app.MapPost("/api/friends/request", async (SendFriendRequestDto req, HttpContext
     return Results.Ok(new AuthResponseDto { Success = true, Message = $"Đã gửi lời mời kết bạn đến {targetUser.DisplayName}!" });
 });
 
-app.MapPost("/api/friends/respond", async (FriendRequestActionDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
+app.MapPost("/api/friends/respond", async Task<IResult> (FriendRequestActionDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
 {
     var userId = GetAuthUserId(http, tokenService);
-    if (!userId.HasValue) return Results.Unauthorized();
+    if (!userId.HasValue) return JsonUnauthorized();
 
     var friendship = await db.Friendships.FindAsync(req.FriendshipId);
     if (friendship == null || friendship.AddresseeId != userId.Value)
@@ -737,10 +737,10 @@ app.MapPost("/api/friends/respond", async (FriendRequestActionDto req, HttpConte
     }
 });
 
-app.MapDelete("/api/friends/{friendId:guid}", async (Guid friendId, HttpContext http, ServerDbContext db, TokenService tokenService) =>
+app.MapDelete("/api/friends/{friendId:guid}", async Task<IResult> (Guid friendId, HttpContext http, ServerDbContext db, TokenService tokenService) =>
 {
     var userId = GetAuthUserId(http, tokenService);
-    if (!userId.HasValue) return Results.Unauthorized();
+    if (!userId.HasValue) return JsonUnauthorized();
 
     var friendship = await db.Friendships.FirstOrDefaultAsync(f =>
         (f.RequesterId == userId.Value && f.AddresseeId == friendId) ||
@@ -823,3 +823,10 @@ static Guid? GetAuthUserId(HttpContext http, TokenService tokenService)
         return null;
     return tokenService.ValidateToken(authHeader["Bearer ".Length..].Trim());
 }
+
+static IResult JsonUnauthorized(string message = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.") =>
+    Results.Json(new AuthResponseDto { Success = false, Message = message }, statusCode: 401);
+
+static IResult JsonNotFound(string message = "Không tìm thấy dữ liệu yêu cầu.") =>
+    Results.Json(new AuthResponseDto { Success = false, Message = message }, statusCode: 404);
+
