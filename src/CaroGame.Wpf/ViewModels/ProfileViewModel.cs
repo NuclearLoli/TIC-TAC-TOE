@@ -21,6 +21,9 @@ public partial class ProfileViewModel : ViewModelBase
     private string _title = "HỒ SƠ KỲ THỦ";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsOverviewTab))]
+    [NotifyPropertyChangedFor(nameof(IsEditTab))]
+    [NotifyPropertyChangedFor(nameof(IsSecurityTab))]
     private string _currentTab = "Overview"; // Overview, Edit, Security
 
     public bool IsOverviewTab => CurrentTab == "Overview";
@@ -58,10 +61,15 @@ public partial class ProfileViewModel : ViewModelBase
 
     // Feedback
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatus))]
     private string _statusMessage = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSuccess))]
     private string _successMessage = string.Empty;
+
+    public bool HasStatus => !string.IsNullOrWhiteSpace(StatusMessage);
+    public bool HasSuccess => !string.IsNullOrWhiteSpace(SuccessMessage);
 
     [ObservableProperty]
     private bool _isBusy;

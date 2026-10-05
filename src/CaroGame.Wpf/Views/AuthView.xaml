@@ -10,7 +10,7 @@
              d:DesignHeight="760" d:DesignWidth="1100">
 
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
         <conv:BoolToVisibilityConverter x:Key="InvertedBoolToVis" Invert="True" />
     </UserControl.Resources>
 

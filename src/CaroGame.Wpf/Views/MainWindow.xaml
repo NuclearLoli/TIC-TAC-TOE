@@ -73,28 +73,8 @@
                     <TextBlock Text="CỜ CARO" FontWeight="Bold" FontSize="12.5" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Window Control Buttons (Minimize, Maximize, Close) & User Identity -->
+                <!-- Window Control Buttons (Minimize, Maximize, Close) -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                    <!-- Global User Account / Profile pill (Only visible when logged in) -->
-                    <Button Command="{Binding OpenProfileOrAuthCommand}" Margin="0,0,14,0" Padding="8,3"
-                            Background="#2B2926" BorderBrush="#3F3C38" BorderThickness="1" Cursor="Hand"
-                            ToolTip="Hồ sơ cá nhân / Tùy biến tài khoản"
-                            Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <controls:AvatarControl Avatar="{Binding CurrentUser.Avatar}"
-                                                    AvatarIcon="{Binding UserAvatarIcon}"
-                                                    Size="22" FontSize="11"
-                                                    BorderThickness="1"
-                                                    Margin="0,0,6,0" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding UserFlag}" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center"
-                                       Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}" />
-                            <TextBlock Text="{Binding UserDisplayName}" FontWeight="SemiBold" FontSize="11.5" Foreground="#E2DFD8" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding UserEloText}" FontWeight="Bold" FontSize="11" Foreground="#F59E0B"
-                                       Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}"
-                                       VerticalAlignment="Center" Margin="6,0,0,0" />
-                        </StackPanel>
-                    </Button>
-
                     <Button Width="44" Height="38" Background="Transparent" BorderThickness="0"
                             Content="—" FontSize="12" Foreground="#9E9C99" Cursor="Hand" Click="Minimize_Click"/>
                     <Button Width="44" Height="38" Background="Transparent" BorderThickness="0"

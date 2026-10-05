@@ -10,7 +10,7 @@
              d:DataContext="{d:DesignInstance vm:FriendsViewModel}">
 
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
         <conv:BoolToVisibilityConverter x:Key="InvertedBoolToVis" Invert="True" />
     </UserControl.Resources>
 
@@ -43,18 +43,18 @@
         <!-- MAIN CONTENT AREA -->
         <Grid Grid.Row="1">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Width="780" HorizontalAlignment="Center" Margin="0,24,0,32">
+                <StackPanel MaxWidth="820" HorizontalAlignment="Center" Margin="24,20,24,32">
 
                     <!-- FEEDBACK BANNERS -->
                     <Border CornerRadius="8" Padding="14,9" Margin="0,0,0,14"
                             Background="#1E3326" BorderBrush="#2D5A3E" BorderThickness="1"
-                            Visibility="{Binding SuccessMessage.Length, Converter={StaticResource BoolToVis}}">
+                            Visibility="{Binding HasSuccess, Converter={StaticResource BoolToVis}}">
                         <TextBlock Text="{Binding SuccessMessage}" FontSize="12.5" Foreground="#4ADE80" FontWeight="Bold" HorizontalAlignment="Center" />
                     </Border>
 
                     <Border CornerRadius="8" Padding="14,9" Margin="0,0,0,14"
                             Background="#3D2424" BorderBrush="#613232" BorderThickness="1"
-                            Visibility="{Binding StatusMessage.Length, Converter={StaticResource BoolToVis}}">
+                            Visibility="{Binding HasStatus, Converter={StaticResource BoolToVis}}">
                         <TextBlock Text="{Binding StatusMessage}" FontSize="12.5" Foreground="#FFA3A3" FontWeight="Bold" HorizontalAlignment="Center" />
                     </Border>
 

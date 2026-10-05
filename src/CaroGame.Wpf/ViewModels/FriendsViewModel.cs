@@ -13,6 +13,9 @@ public partial class FriendsViewModel : ViewModelBase
     private readonly INetworkService _networkService;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsFriendsTab))]
+    [NotifyPropertyChangedFor(nameof(IsRequestsTab))]
+    [NotifyPropertyChangedFor(nameof(IsSearchTab))]
     private string _currentTab = "Friends"; // Friends, Requests, Search
 
     public bool IsFriendsTab => CurrentTab == "Friends";
@@ -41,10 +44,15 @@ public partial class FriendsViewModel : ViewModelBase
     private bool _isBusy;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatus))]
     private string _statusMessage = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSuccess))]
     private string _successMessage = string.Empty;
+
+    public bool HasStatus => !string.IsNullOrWhiteSpace(StatusMessage);
+    public bool HasSuccess => !string.IsNullOrWhiteSpace(SuccessMessage);
 
     // Challenge Dialog State
     [ObservableProperty]
