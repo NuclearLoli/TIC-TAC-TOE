@@ -1,1 +1,37 @@
-* text=auto
+# Auto-detect text files and normalize line endings
+* text=auto eol=lf
+
+# C# & WPF source files
+*.cs text diff=csharp
+*.xaml text
+*.json text
+*.md text
+*.xml text
+*.config text
+*.iss text eol=crlf
+
+# Solution & Project files
+*.sln text eol=crlf
+*.csproj text
+*.props text
+*.targets text
+
+# Windows Scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.sh text eol=lf
+
+# Binary files - prevent any line ending corruption
+*.ttf binary
+*.otf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.wav binary
+*.mp3 binary
+*.zip binary
+*.dll binary
+*.exe binary
+*.db binary
