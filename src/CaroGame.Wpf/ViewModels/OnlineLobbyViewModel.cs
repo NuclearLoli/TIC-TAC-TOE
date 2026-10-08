@@ -22,7 +22,7 @@ public partial class OnlineLobbyViewModel : ViewModelBase
     private string _joinCode = string.Empty;
 
     [ObservableProperty]
-    private string _serverUrl = "http://localhost:5000/carohub";
+    private string _serverUrl = "https://carogame-d2bafxdybvg3grae.japaneast-01.azurewebsites.net/carohub";
 
     [ObservableProperty]
     private bool _isHosting;

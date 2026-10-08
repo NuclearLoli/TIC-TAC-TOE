@@ -19,7 +19,7 @@ public class SignalRNetworkService : INetworkService
     public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
     public string? CurrentRoomCode { get; private set; }
     public CellState MyRole { get; private set; } = CellState.Empty;
-    public string ServerUrl { get; set; } = "http://localhost:5000/carohub";
+    public string ServerUrl { get; set; } = "https://carogame-d2bafxdybvg3grae.japaneast-01.azurewebsites.net/carohub";
     public UserProfileDto? CurrentUser { get; private set; }
     public string? AuthToken { get; private set; }
     public GameStartDto? CurrentGameInfo { get; private set; }

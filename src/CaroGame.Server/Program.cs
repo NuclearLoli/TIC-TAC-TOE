@@ -1,7 +1,9 @@
+using System.Threading.RateLimiting;
 using CaroGame.Core.Network;
 using CaroGame.Server.Data;
 using CaroGame.Server.Hubs;
 using CaroGame.Server.Services;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,16 +14,32 @@ if (File.Exists(localJsonBase))
     builder.Configuration.AddJsonFile(localJsonBase, optional: true, reloadOnChange: true);
 }
 
+// Security: Hide Server Header and limit payload sizes to prevent DoS
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false;
+    options.Limits.MaxRequestBodySize = 2 * 1024 * 1024; // 2 MB max body limit
+});
+
 if (!args.Any(a => a.StartsWith("--urls", StringComparison.OrdinalIgnoreCase)) &&
     string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
 {
     builder.WebHost.UseUrls("http://0.0.0.0:5000");
 }
 
-// Database SQLite
+// Database SQLite (Persistent across Azure restarts)
+string homeDir = Environment.GetEnvironmentVariable("HOME") ?? AppContext.BaseDirectory;
+string dataFolder = Path.Combine(homeDir, "data");
+try { Directory.CreateDirectory(dataFolder); } catch { }
+
+string defaultPersistentPath = Path.Combine(dataFolder, "caro_server.db");
 string baseDbPath = Path.Combine(AppContext.BaseDirectory, "caro_server.db");
 string contentDbPath = Path.Combine(builder.Environment.ContentRootPath, "caro_server.db");
-string dbPath = File.Exists(baseDbPath) ? baseDbPath : (File.Exists(contentDbPath) ? contentDbPath : baseDbPath);
+
+string dbPath = File.Exists(defaultPersistentPath)
+    ? defaultPersistentPath
+    : (File.Exists(baseDbPath) ? baseDbPath : (File.Exists(contentDbPath) ? contentDbPath : defaultPersistentPath));
+
 Console.WriteLine($"[Server] SQLite Database: {Path.GetFullPath(dbPath)}");
 builder.Services.AddDbContext<ServerDbContext>(options =>
 {
@@ -31,8 +49,48 @@ builder.Services.AddDbContext<ServerDbContext>(options =>
 builder.Services.AddSingleton<TokenService>();
 builder.Services.AddSingleton<IEmailService, SmtpEmailService>();
 
-// SignalR & CORS
-builder.Services.AddSignalR();
+// SignalR & Message Size Limits
+builder.Services.AddSignalR(options =>
+{
+    options.MaximumReceiveMessageSize = 64 * 1024; // 64 KB max
+});
+
+// Rate Limiting to prevent brute-force attacks and abuse
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "anon",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    options.AddPolicy("otp", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "anon",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "global",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 120,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
+
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -216,6 +274,25 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
+app.UseRateLimiter();
+
+// Security Headers (OWASP standard hardening)
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Append("Referrer-Policy", "no-referrer");
+    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; frame-ancestors 'none';");
+    await next();
+});
+
 app.UseCors();
 
 app.MapGet("/", () => "Caro Game SignalR Server is running!");
@@ -322,7 +399,7 @@ app.MapPost("/api/auth/send-otp", async (SendOtpRequestDto req, ServerDbContext 
     }
 
     return Results.Ok(new AuthResponseDto { Success = true, Message = $"Mã OTP 6 số đã được gửi đến {email}. Vui lòng kiểm tra hộp thư đến!" });
-});
+}).RequireRateLimiting("otp");
 
 app.MapPost("/api/auth/verify-otp", async (VerifyOtpRequestDto req, ServerDbContext db) =>
 {
@@ -341,7 +418,7 @@ app.MapPost("/api/auth/verify-otp", async (VerifyOtpRequestDto req, ServerDbCont
     }
 
     return Results.Ok(new AuthResponseDto { Success = true, Message = "Mã xác thực hợp lệ!" });
-});
+}).RequireRateLimiting("auth");
 
 app.MapPost("/api/auth/reset-password", async (ResetPasswordRequestDto req, ServerDbContext db) =>
 {
@@ -375,7 +452,7 @@ app.MapPost("/api/auth/reset-password", async (ResetPasswordRequestDto req, Serv
     await db.SaveChangesAsync();
 
     return Results.Ok(new AuthResponseDto { Success = true, Message = "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay." });
-});
+}).RequireRateLimiting("auth");
 
 // Authentication Endpoints
 app.MapPost("/api/auth/register", async (RegisterRequestDto req, ServerDbContext db, TokenService tokenService) =>
@@ -454,7 +531,7 @@ app.MapPost("/api/auth/register", async (RegisterRequestDto req, ServerDbContext
         Token = token,
         User = MapProfile(user)
     });
-});
+}).RequireRateLimiting("auth");
 
 app.MapPost("/api/auth/login", async (LoginRequestDto req, ServerDbContext db, TokenService tokenService) =>
 {
@@ -489,7 +566,7 @@ app.MapPost("/api/auth/login", async (LoginRequestDto req, ServerDbContext db, T
         Token = token,
         User = MapProfile(user)
     });
-});
+}).RequireRateLimiting("auth");
 
 app.MapGet("/api/auth/profile", async Task<IResult> (HttpContext http, ServerDbContext db, TokenService tokenService) =>
 {
@@ -608,7 +685,7 @@ app.MapPost("/api/profile/change-password", async Task<IResult> (ChangePasswordR
     await db.SaveChangesAsync();
 
     return Results.Ok(new AuthResponseDto { Success = true, Message = "Đổi mật khẩu thành công!" });
-});
+}).RequireRateLimiting("auth");
 
 // Link / Update Email
 app.MapPost("/api/profile/link-email", async Task<IResult> (LinkEmailRequestDto req, HttpContext http, ServerDbContext db, TokenService tokenService) =>
@@ -659,7 +736,7 @@ app.MapPost("/api/profile/link-email", async Task<IResult> (LinkEmailRequestDto 
         Message = "Liên kết Email thành công!",
         User = MapProfile(user)
     });
-});
+}).RequireRateLimiting("auth");
 
 // Friends Endpoints
 app.MapGet("/api/friends", async Task<IResult> (HttpContext http, ServerDbContext db, TokenService tokenService) =>

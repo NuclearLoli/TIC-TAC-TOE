@@ -9,7 +9,23 @@ public class TokenService
 
     static TokenService()
     {
-        string keyPath = Path.Combine(AppContext.BaseDirectory, "server_secret.key");
+        string? envSecret = Environment.GetEnvironmentVariable("CARO_SERVER_SECRET")
+                         ?? Environment.GetEnvironmentVariable("JWT_SECRET");
+
+        if (!string.IsNullOrWhiteSpace(envSecret))
+        {
+            SecretKey = Encoding.UTF8.GetBytes(envSecret);
+            return;
+        }
+
+        string homeDir = Environment.GetEnvironmentVariable("HOME") ?? AppContext.BaseDirectory;
+        string dataFolder = Path.Combine(homeDir, "data");
+        try { Directory.CreateDirectory(dataFolder); } catch { }
+
+        string keyPath = File.Exists(Path.Combine(dataFolder, "server_secret.key"))
+            ? Path.Combine(dataFolder, "server_secret.key")
+            : Path.Combine(AppContext.BaseDirectory, "server_secret.key");
+
         if (File.Exists(keyPath))
         {
             try
@@ -26,9 +42,13 @@ public class TokenService
             SecretKey = RandomNumberGenerator.GetBytes(64);
             try
             {
-                File.WriteAllBytes(keyPath, SecretKey);
+                string targetPath = Path.Combine(dataFolder, "server_secret.key");
+                File.WriteAllBytes(targetPath, SecretKey);
             }
-            catch { }
+            catch
+            {
+                try { File.WriteAllBytes(keyPath, SecretKey); } catch { }
+            }
         }
     }
 
