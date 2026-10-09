@@ -75,8 +75,6 @@ graphify-out/
 .claude/
 .agents/
 .playwright-cli/
-docs/CHAT_TRANSCRIPT.*
-docs/export_chat.py
 
 # 7. FILE TẠM HỆ ĐIỀU HÀNH
 # ------------------------------------------
