@@ -214,58 +214,45 @@ using (var scope = app.Services.CreateScope())
             updEmail.ExecuteNonQuery();
         }
 
-        // Seed default account mailrac0212@gmail.com and support Testarossa (Password: Caro@0212)
-        using (var seedCmd = conn.CreateCommand())
+        // SQLite ID normalization
+        using (var normCmd = conn.CreateCommand())
         {
-            string hash = PasswordHasher.HashPassword("Caro@0212");
-            seedCmd.CommandText = @"
-                UPDATE Users SET Id = UPPER(Id);
-                UPDATE Users SET Email = 'testarossa@carogame.local', PasswordHash = @hash WHERE LOWER(Username) = 'testarossa';
-                UPDATE Users SET PasswordHash = @hash, Email = 'mailrac0212@gmail.com', Role = 'VIP', Title = 'Kiện Tướng', AvatarFrame = 'gold', Level = 5, ExperiencePoints = 420 WHERE LOWER(Username) = 'mailrac0212';
-            ";
-            var pHash = seedCmd.CreateParameter();
-            pHash.ParameterName = "@hash";
-            pHash.Value = hash;
-            seedCmd.Parameters.Add(pHash);
-            seedCmd.ExecuteNonQuery();
+            normCmd.CommandText = "UPDATE Users SET Id = UPPER(Id);";
+            normCmd.ExecuteNonQuery();
         }
 
-        bool hasMailrac = db.Users.AsNoTracking().Any(u => u.Username.ToLower() == "mailrac0212" || u.Email.ToLower() == "mailrac0212@gmail.com");
-        if (!hasMailrac)
+        // Optional: Seed demo/admin account if configured via environment variables
+        string? seedUserEnv = Environment.GetEnvironmentVariable("SEED_DEMO_USER");
+        string? seedPassEnv = Environment.GetEnvironmentVariable("SEED_DEMO_PASSWORD");
+        if (!string.IsNullOrWhiteSpace(seedUserEnv) && !string.IsNullOrWhiteSpace(seedPassEnv))
         {
-            var seedUser = new User
+            string hash = PasswordHasher.HashPassword(seedPassEnv);
+            var seedUser = db.Users.FirstOrDefault(u => u.Username.ToLower() == seedUserEnv.ToLower());
+            if (seedUser == null)
             {
-                Username = "mailrac0212",
-                Email = "mailrac0212@gmail.com",
-                DisplayName = "Kỳ Thủ Caro",
-                PasswordHash = PasswordHasher.HashPassword("Caro@0212"),
-                Role = "VIP",
-                Title = "Kiện Tướng",
-                AvatarFrame = "gold",
-                Level = 5,
-                ExperiencePoints = 420,
-                EloRating = 1200,
-                PeakElo = 1200,
-                LowestElo = 950,
-                Avatar = "king",
-                Country = "VN",
-                Bio = "Đam mê cờ Caro!",
-                Wins = 5,
-                Losses = 1,
-                Draws = 0,
-                WinStreak = 3,
-                BestWinStreak = 4,
-                TotalPlayTimeSeconds = 3600,
-                CreatedAt = DateTime.UtcNow,
-                LastLoginAt = DateTime.UtcNow
-            };
-            db.Users.Add(seedUser);
-            db.SaveChanges();
-            Console.WriteLine("[Server] Khởi tạo tài khoản mẫu: mailrac0212@gmail.com (Mật khẩu: Caro@0212)");
-        }
-        else
-        {
-            Console.WriteLine("[Server] Đã đồng bộ tài khoản mẫu mailrac0212 (Mật khẩu: Caro@0212)");
+                db.Users.Add(new User
+                {
+                    Username = seedUserEnv,
+                    Email = $"{seedUserEnv.ToLower()}@carogame.local",
+                    DisplayName = "Demo Player",
+                    PasswordHash = hash,
+                    Role = "VIP",
+                    Title = "Kiện Tướng",
+                    AvatarFrame = "gold",
+                    Level = 5,
+                    ExperiencePoints = 420,
+                    EloRating = 1200,
+                    PeakElo = 1200,
+                    LowestElo = 950,
+                    Avatar = "king",
+                    Country = "VN",
+                    Bio = "Đam mê cờ Caro!",
+                    CreatedAt = DateTime.UtcNow,
+                    LastLoginAt = DateTime.UtcNow
+                });
+                db.SaveChanges();
+                Console.WriteLine($"[Server] Đã khởi tạo tài khoản mẫu từ cấu hình: {seedUserEnv}");
+            }
         }
     }
     catch (Exception ex)

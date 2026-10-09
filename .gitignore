@@ -53,6 +53,11 @@ publish/
 *.suo
 *.userosscache
 *.sln.docstates
+[Pp]ublishProfiles/
+*.pubxml
+*.pubxml.user
+ServiceDependencies/
+*.arm.json
 
 # 5. KẾT QUẢ KIỂM THỬ (TEST RESULTS & LOGS)
 # ------------------------------------------
@@ -70,6 +75,8 @@ graphify-out/
 .claude/
 .agents/
 .playwright-cli/
+docs/CHAT_TRANSCRIPT.*
+docs/export_chat.py
 
 # 7. FILE TẠM HỆ ĐIỀU HÀNH
 # ------------------------------------------
